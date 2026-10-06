@@ -2,6 +2,8 @@
 
 Find and fix the security holes that AI app builders (Lovable, Bolt, Replit, v0) commonly leave in Supabase apps — and prove the fix works before you ship it.
 
+**Try it free in your browser: [lockstamp.github.io](https://lockstamp.github.io/)** — nothing is uploaded.
+
 Lockstamp is an independent project. It is not affiliated with or endorsed by Supabase, Lovable, Bolt or Replit.
 
 ```bash
