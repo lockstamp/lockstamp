@@ -1,0 +1,282 @@
+{
+  "findings": [
+    {
+      "rule": "rls_disabled",
+      "severity": "critical",
+      "target": "public.app_settings",
+      "title": "Row Level Security is off for public.app_settings",
+      "plain": "Anyone who has your app's public key — it's visible in your website's code — can read, add, change and delete every row in \"app_settings\".",
+      "fix": "Turn on Row Level Security. The fix allows read-only access for now — decide whether \"app_settings\" should be public at all.",
+      "autoFixed": true
+    },
+    {
+      "rule": "rls_disabled",
+      "severity": "critical",
+      "target": "public.profiles",
+      "title": "Row Level Security is off for public.profiles",
+      "plain": "Anyone who has your app's public key — it's visible in your website's code — can read, add, change and delete every row in \"profiles\".",
+      "fix": "Turn on Row Level Security and add rules so each user can only reach their own rows (matched on id).",
+      "autoFixed": true
+    },
+    {
+      "rule": "rls_disabled",
+      "severity": "critical",
+      "target": "public.subscriptions",
+      "title": "Row Level Security is off for public.subscriptions",
+      "plain": "Anyone who has your app's public key — it's visible in your website's code — can read, add, change and delete every row in \"subscriptions\".",
+      "fix": "Turn on Row Level Security so each user can only read their own rows. Changes to \"subscriptions\" should come only from your server (for example a payment webhook or an admin function).",
+      "autoFixed": true
+    },
+    {
+      "rule": "secret_in_code",
+      "severity": "critical",
+      "target": "src/config.ts:2",
+      "title": "Secret in a public environment variable (VITE_SUPABASE_SERVICE_ROLE_KEY) found in src/config.ts:2",
+      "plain": "Variables that start with VITE_ are copied into your website when it's built, so anyone can read their values. Found: VITE_SUPABASE_SERVICE_ROLE_KEY",
+      "fix": "Treat this key as leaked: replace (rotate) it in the provider's dashboard now, delete it from the code, and move whatever needs it into a server-side function that reads it from a secret setting.",
+      "autoFixed": false
+    },
+    {
+      "rule": "secret_in_code",
+      "severity": "critical",
+      "target": "src/lib/admin.ts:7",
+      "title": "Supabase service_role key found in src/lib/admin.ts:7",
+      "plain": "It's in code that runs in the browser, so anyone visiting your site can find it. Found: eyJhbGciOi… (221 characters)",
+      "fix": "Treat this key as leaked: replace (rotate) it in the provider's dashboard now, delete it from the code, and move whatever needs it into a server-side function that reads it from a secret setting.",
+      "autoFixed": false
+    },
+    {
+      "rule": "policy_always_true",
+      "severity": "high",
+      "target": "public.notes — rule \"Enable insert for authenticated users only\"",
+      "title": "Rule \"Enable insert for authenticated users only\" on public.notes lets users reach other users' rows",
+      "plain": "Any logged-in user can add rows to \"notes\" that claim to belong to a different user.",
+      "fix": "Replace this rule with one that only matches rows where user_id is the current user.",
+      "autoFixed": true
+    },
+    {
+      "rule": "policy_always_true",
+      "severity": "high",
+      "target": "public.notes — rule \"Enable read access for all users\"",
+      "title": "Rule \"Enable read access for all users\" on public.notes lets users read other users' rows",
+      "plain": "Anyone, even without logging in, can see every user's rows in \"notes\", not just their own.",
+      "fix": "Replace this rule with one that only matches rows where user_id is the current user.",
+      "autoFixed": true
+    },
+    {
+      "rule": "protected_columns_editable",
+      "severity": "high",
+      "target": "public.profiles",
+      "title": "Users can set their own role in public.profiles",
+      "plain": "When a user edits their own row in \"profiles\", nothing stops them from also changing \"role\". That could let someone make themselves an admin or unlock paid features for free.",
+      "fix": "Allow users to edit only the safe columns of \"profiles\"; \"role\" can then only be changed by your server.",
+      "autoFixed": true
+    },
+    {
+      "rule": "view_bypasses_rls",
+      "severity": "high",
+      "target": "public.note_counts",
+      "title": "View public.note_counts ignores Row Level Security",
+      "plain": "\"note_counts\" shows data using its creator's full permissions, so it skips your access rules. Anyone with your app's public key can read everything it shows.",
+      "fix": "Make the view run with the permissions of the person asking (security_invoker), so your table rules apply.",
+      "autoFixed": true
+    },
+    {
+      "rule": "definer_function_reads_users",
+      "severity": "high",
+      "target": "public.get_all_emails()",
+      "title": "Function public.get_all_emails exposes your users table",
+      "plain": "\"get_all_emails\" reads your users table (emails and account details) with full database permissions, and anyone, even without logging in, can call it.",
+      "fix": "Stop the public and logged-in users from calling it. If your app needs it, call it from a server function instead.",
+      "autoFixed": true
+    },
+    {
+      "rule": "public_bucket",
+      "severity": "info",
+      "target": "storage bucket \"avatars\"",
+      "title": "Storage bucket \"avatars\" is public",
+      "plain": "Anyone with a file's link can download files in \"avatars\". That's fine for things like profile pictures, not for private documents.",
+      "fix": "If files in \"avatars\" are private, make the bucket private and serve files with signed links.",
+      "autoFixed": false
+    }
+  ],
+  "proof": [
+    {
+      "table": "public.app_settings",
+      "test": "A visitor who isn't logged in can add rows",
+      "before": true,
+      "after": false,
+      "autoFixed": true
+    },
+    {
+      "table": "public.app_settings",
+      "test": "A visitor who isn't logged in can change rows",
+      "before": true,
+      "after": false,
+      "autoFixed": true
+    },
+    {
+      "table": "public.app_settings",
+      "test": "A visitor who isn't logged in can delete rows",
+      "before": true,
+      "after": false,
+      "autoFixed": true
+    },
+    {
+      "table": "public.notes",
+      "test": "A visitor who isn't logged in can read rows",
+      "before": true,
+      "after": false,
+      "autoFixed": true
+    },
+    {
+      "table": "public.notes",
+      "test": "A visitor who isn't logged in can add rows",
+      "before": false,
+      "after": false,
+      "autoFixed": true
+    },
+    {
+      "table": "public.notes",
+      "test": "A logged-in user can read another user's rows",
+      "before": true,
+      "after": false,
+      "autoFixed": true
+    },
+    {
+      "table": "public.notes",
+      "test": "A logged-in user can change another user's rows",
+      "before": false,
+      "after": false,
+      "autoFixed": true
+    },
+    {
+      "table": "public.notes",
+      "test": "A logged-in user can delete another user's rows",
+      "before": false,
+      "after": false,
+      "autoFixed": true
+    },
+    {
+      "table": "public.notes",
+      "test": "A logged-in user can add rows in another user's name",
+      "before": true,
+      "after": false,
+      "autoFixed": true
+    },
+    {
+      "table": "public.profiles",
+      "test": "A visitor who isn't logged in can read rows",
+      "before": true,
+      "after": false,
+      "autoFixed": true
+    },
+    {
+      "table": "public.profiles",
+      "test": "A visitor who isn't logged in can add rows",
+      "before": true,
+      "after": false,
+      "autoFixed": true
+    },
+    {
+      "table": "public.profiles",
+      "test": "A logged-in user can read another user's rows",
+      "before": true,
+      "after": false,
+      "autoFixed": true
+    },
+    {
+      "table": "public.profiles",
+      "test": "A logged-in user can change another user's rows",
+      "before": true,
+      "after": false,
+      "autoFixed": true
+    },
+    {
+      "table": "public.profiles",
+      "test": "A logged-in user can delete another user's rows",
+      "before": true,
+      "after": false,
+      "autoFixed": true
+    },
+    {
+      "table": "public.profiles",
+      "test": "A logged-in user can add rows in another user's name",
+      "before": true,
+      "after": false,
+      "autoFixed": true
+    },
+    {
+      "table": "public.profiles",
+      "test": "A logged-in user can change their own role",
+      "before": true,
+      "after": false,
+      "autoFixed": true
+    },
+    {
+      "table": "public.subscriptions",
+      "test": "A visitor who isn't logged in can read rows",
+      "before": true,
+      "after": false,
+      "autoFixed": true
+    },
+    {
+      "table": "public.subscriptions",
+      "test": "A visitor who isn't logged in can add rows",
+      "before": true,
+      "after": false,
+      "autoFixed": true
+    },
+    {
+      "table": "public.subscriptions",
+      "test": "A logged-in user can read another user's rows",
+      "before": true,
+      "after": false,
+      "autoFixed": true
+    },
+    {
+      "table": "public.subscriptions",
+      "test": "A logged-in user can change another user's rows",
+      "before": true,
+      "after": false,
+      "autoFixed": true
+    },
+    {
+      "table": "public.subscriptions",
+      "test": "A logged-in user can delete another user's rows",
+      "before": true,
+      "after": false,
+      "autoFixed": true
+    },
+    {
+      "table": "public.subscriptions",
+      "test": "A logged-in user can add rows in another user's name",
+      "before": true,
+      "after": false,
+      "autoFixed": true
+    },
+    {
+      "table": "public.subscriptions",
+      "test": "A logged-in user can change their own billing records",
+      "before": true,
+      "after": false,
+      "autoFixed": true
+    },
+    {
+      "table": "public.note_counts",
+      "test": "A visitor who isn't logged in can read data through this view",
+      "before": true,
+      "after": false,
+      "autoFixed": true
+    },
+    {
+      "table": "public.get_all_emails()",
+      "test": "A visitor who isn't logged in can call this function and get user data",
+      "before": true,
+      "after": false,
+      "autoFixed": true
+    }
+  ],
+  "loadIssues": [],
+  "fixIssues": []
+}

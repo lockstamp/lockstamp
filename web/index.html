@@ -1,0 +1,394 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Lockstamp — free security check for Supabase apps</title>
+    <meta
+      name="description"
+      content="Check a Supabase app built with Lovable, Bolt or Replit for data leaks in about a minute. See which attacks work, tested on a private copy, plus the fix. Free, and nothing leaves your browser."
+    />
+    <link
+      rel="icon"
+      href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Crect width='32' height='32' rx='7' fill='%23F5C451'/%3E%3Cpath d='M9 16.5l4.5 4.5L23 11.5' stroke='%2313294B' stroke-width='3.5' fill='none' stroke-linecap='round' stroke-linejoin='round'/%3E%3C/svg%3E"
+    />
+    <script>
+      // Hide animated elements until the opening sequence starts; show everything if it never does.
+      document.documentElement.classList.add("js");
+      setTimeout(function () {
+        if (!window.__motionReady) document.documentElement.classList.add("motion-fallback");
+      }, 1500);
+    </script>
+  </head>
+  <body>
+    <a class="skip" href="#check">Skip to the check</a>
+
+    <div class="dark" id="top">
+      <canvas class="dust" aria-hidden="true"></canvas>
+      <div class="beam" aria-hidden="true"></div>
+      <div class="drafting" aria-hidden="true">
+        <span class="rule-h top"></span>
+        <span class="rule-h bottom"></span>
+        <span class="rule-v left"></span>
+        <span class="rule-v right"></span>
+        <span class="tick tl"></span>
+        <span class="tick tr"></span>
+        <span class="tick bl"></span>
+        <span class="tick br"></span>
+      </div>
+
+      <header class="nav reveal">
+        <a class="brand" href="./" aria-label="Lockstamp home">
+          <span class="brand-mark" aria-hidden="true">✓</span>
+          <span>Lockstamp</span>
+        </a>
+        <nav class="nav-links" aria-label="Sections">
+          <a href="#catches">What it catches</a>
+          <a href="#check">How it works</a>
+          <a href="#faq">FAQ</a>
+        </nav>
+        <a class="button accent small" href="#check">Run the free check</a>
+      </header>
+
+      <section class="hero" aria-labelledby="hero-title">
+        <p class="badge reveal">
+          <span class="badge-dot" aria-hidden="true"></span>
+          <span class="badge-long">For Supabase apps built with Lovable, Bolt or Replit</span>
+          <span class="badge-short">Supabase apps · Lovable, Bolt, Replit</span>
+        </p>
+        <h1 id="hero-title" class="reveal">Can a stranger read your&nbsp;users' data?</h1>
+        <p class="lede reveal">See which attacks on your database work, tested on a private copy, and get the fix — in about a minute.</p>
+        <div class="hero-actions reveal">
+          <a class="button accent" href="#check">Run the free check</a>
+          <button type="button" class="button outline-light" data-demo>See a sample result</button>
+        </div>
+        <p class="fud reveal">Free · No signup · Nothing leaves your browser</p>
+
+        <div class="stage">
+          <figure class="side side-left reveal" aria-label="Sample fix file">
+            <figcaption class="side-head"><span class="side-dot"></span>fix.sql</figcaption>
+            <pre><code><span class="k">alter table</span> profiles
+  <span class="k">enable row level security</span>;
+
+<span class="k">create policy</span> <span class="s">"own notes"</span>
+  <span class="k">on</span> notes <span class="k">for select</span>
+  <span class="k">using</span> (auth.uid() = user_id);
+
+<span class="k">revoke execute on function</span>
+  get_all_emails() <span class="k">from</span> anon;</code></pre>
+          </figure>
+
+          <figure class="window reveal" aria-labelledby="window-caption">
+            <div class="window-bar">
+              <span class="window-dots" aria-hidden="true"><i></i><i></i><i></i></span>
+              <span class="window-title" id="window-caption">Sample result<span class="window-app"> · a demo notes app</span> · 3 of 22 attacks</span>
+            </div>
+            <div class="window-body">
+              <div class="window-head">
+                <div>
+                  <p class="mock-verdict">22 ways in.</p>
+                  <p class="mock-detail">The fix blocks all of them.</p>
+                </div>
+                <ul class="mock-counts">
+                  <li class="sev-critical">3 critical</li>
+                  <li class="sev-high">5 high</li>
+                </ul>
+              </div>
+              <table class="slip">
+                <thead>
+                  <tr>
+                    <th scope="col">Attack tried</th>
+                    <th scope="col">Before</th>
+                    <th scope="col">After fix</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  <tr>
+                    <td><code>notes</code>A visitor reads everyone's private notes</td>
+                    <td><span class="chip possible"><svg class="lock" viewBox="0 0 16 16" aria-hidden="true"><path class="shackle" d="M5.25 7.5V5.25a2.75 2.75 0 0 1 5.5 0V7.5"/><rect x="3.5" y="7.5" width="9" height="6.5" rx="1.6"/></svg>Possible</span></td>
+                    <td><span class="chip blocked"><svg class="lock" viewBox="0 0 16 16" aria-hidden="true"><path class="shackle" d="M5.25 7.5V5.25a2.75 2.75 0 0 1 5.5 0V7.5"/><rect x="3.5" y="7.5" width="9" height="6.5" rx="1.6"/></svg>Blocked</span></td>
+                  </tr>
+                  <tr>
+                    <td><code>profiles</code>A user changes their own role to admin</td>
+                    <td><span class="chip possible"><svg class="lock" viewBox="0 0 16 16" aria-hidden="true"><path class="shackle" d="M5.25 7.5V5.25a2.75 2.75 0 0 1 5.5 0V7.5"/><rect x="3.5" y="7.5" width="9" height="6.5" rx="1.6"/></svg>Possible</span></td>
+                    <td><span class="chip blocked"><svg class="lock" viewBox="0 0 16 16" aria-hidden="true"><path class="shackle" d="M5.25 7.5V5.25a2.75 2.75 0 0 1 5.5 0V7.5"/><rect x="3.5" y="7.5" width="9" height="6.5" rx="1.6"/></svg>Blocked</span></td>
+                  </tr>
+                  <tr>
+                    <td><code>get_all_emails()</code>Anyone downloads every user's email</td>
+                    <td><span class="chip possible"><svg class="lock" viewBox="0 0 16 16" aria-hidden="true"><path class="shackle" d="M5.25 7.5V5.25a2.75 2.75 0 0 1 5.5 0V7.5"/><rect x="3.5" y="7.5" width="9" height="6.5" rx="1.6"/></svg>Possible</span></td>
+                    <td><span class="chip blocked"><svg class="lock" viewBox="0 0 16 16" aria-hidden="true"><path class="shackle" d="M5.25 7.5V5.25a2.75 2.75 0 0 1 5.5 0V7.5"/><rect x="3.5" y="7.5" width="9" height="6.5" rx="1.6"/></svg>Blocked</span></td>
+                  </tr>
+                </tbody>
+              </table>
+            </div>
+          </figure>
+
+          <figure class="side side-right reveal" aria-label="Sample findings">
+            <figcaption class="side-head"><span class="side-dot"></span>What we found</figcaption>
+            <ul class="side-findings">
+              <li><span class="sev-tag sev-critical">Critical</span>Row Level Security is off for <code>profiles</code></li>
+              <li><span class="sev-tag sev-high">High</span>Everyone can read every user's <code>notes</code></li>
+              <li><span class="sev-tag sev-high">High</span><code>get_all_emails()</code> exposes your users table</li>
+            </ul>
+          </figure>
+        </div>
+      </section>
+    </div>
+
+    <main>
+      <ul class="proof" aria-label="Why it matters">
+        <li class="reveal">
+          <strong data-count="16000">16,000</strong>
+          <span>Supabase databases found exposing people's personal data</span>
+          <small>UpGuard, reported by TechCrunch · Sept 2026</small>
+        </li>
+        <li class="reveal">
+          <strong>170 of 1,645</strong>
+          <span>Lovable apps that let anyone read their users' data</span>
+          <small>Semafor · May 2025</small>
+        </li>
+        <li class="reveal">
+          <strong>0 bytes</strong>
+          <span>of your database sent anywhere — the check runs in this tab</span>
+          <small>Check it: the page makes no upload requests</small>
+        </li>
+      </ul>
+
+      <section id="catches" class="catches" aria-labelledby="catches-title">
+        <p class="kicker">What it catches</p>
+        <h2 id="catches-title">The holes AI builders leave open</h2>
+        <p class="section-lede">These are the mistakes behind the real leaks. Every attack we report was actually tried on a private copy — not guessed from your settings.</p>
+
+        <div class="bento">
+          <article class="card wide reveal">
+            <p class="card-kicker">Row Level Security off</p>
+            <h3>Tables anyone can read</h3>
+            <p>
+              Your app's public key is visible in your website's code. If a table has no access rules, anyone holding
+              that key can read, change or delete every row.
+            </p>
+            <div class="mini">
+              <div class="mini-row"><code>select * from profiles</code><span class="chip possible small"><svg class="lock" viewBox="0 0 16 16" aria-hidden="true"><path class="shackle" d="M5.25 7.5V5.25a2.75 2.75 0 0 1 5.5 0V7.5"/><rect x="3.5" y="7.5" width="9" height="6.5" rx="1.6"/></svg>Possible</span></div>
+              <div class="mini-row"><code>alter table profiles enable row level security</code><span class="chip blocked small"><svg class="lock" viewBox="0 0 16 16" aria-hidden="true"><path class="shackle" d="M5.25 7.5V5.25a2.75 2.75 0 0 1 5.5 0V7.5"/><rect x="3.5" y="7.5" width="9" height="6.5" rx="1.6"/></svg>Blocked</span></div>
+            </div>
+          </article>
+
+          <article class="card reveal">
+            <p class="card-kicker">Open rules</p>
+            <h3>Users reading each other's data</h3>
+            <p>A rule like <code>using (true)</code> lets every user see every other user's rows.</p>
+          </article>
+
+          <article class="card reveal">
+            <p class="card-kicker">Role columns</p>
+            <h3>Making yourself an admin</h3>
+            <p>If users can edit their own profile, they can often change their own <code>role</code> too.</p>
+          </article>
+
+          <article class="card reveal">
+            <p class="card-kicker">Billing tables</p>
+            <h3>Free paid plans</h3>
+            <p>Users who can write to <code>subscriptions</code> can give themselves the top plan.</p>
+          </article>
+
+          <article class="card reveal">
+            <p class="card-kicker">Keys in your database</p>
+            <h3>Secret keys inside database functions</h3>
+            <p>A <code>service_role</code> or API key written into a database function sits in plain text in your database and its backups. We flag those. (This check doesn't see your app's code.)</p>
+          </article>
+
+          <article class="card wide reveal">
+            <p class="card-kicker">Back doors</p>
+            <h3>Views and functions that skip your rules</h3>
+            <p>
+              A view or database function can run with full permissions and hand out data your rules protect — like a
+              helper that returns every user's email to anyone who asks.
+            </p>
+          </article>
+        </div>
+      </section>
+
+      <section id="check" class="check" tabindex="-1" aria-labelledby="check-title">
+        <div class="check-intro">
+          <p class="kicker">How it works</p>
+          <h2 id="check-title">Check your app in about a minute</h2>
+          <p class="section-lede">You'll need your project's SQL editor — in the Supabase dashboard, or in Lovable under More → Cloud.</p>
+          <ul class="assurances">
+            <li><strong>Read-only.</strong> The query reads your database's structure, never a row of your data.</li>
+            <li><strong>Private.</strong> Everything runs in this browser tab. Nothing is uploaded or stored.</li>
+            <li><strong>Proven.</strong> Every attack we report was actually tried on a private copy, before and after the fix.</li>
+          </ul>
+        </div>
+
+        <ol class="steps">
+          <li class="step">
+            <h3><span class="step-label">Step 1</span> Copy the query</h3>
+            <p>
+              Then paste it into your SQL editor and press <strong>Run</strong>. In Supabase: <strong>SQL Editor</strong> →
+              <strong>New query</strong>. On Lovable Cloud: <strong>More</strong> → <strong>Cloud</strong> → <strong>SQL editor</strong>.
+            </p>
+            <div class="row">
+              <button type="button" class="button primary" id="copy-query">Copy query</button>
+              <button type="button" class="text-button" id="toggle-query" aria-expanded="false" aria-controls="query-preview">Read it first</button>
+              <span class="copied" id="copied" role="status"></span>
+            </div>
+            <pre class="query" id="query-preview" hidden><code></code></pre>
+          </li>
+
+          <li class="step">
+            <h3><span class="step-label">Step 2</span> Paste the result</h3>
+            <p>Click the single cell under <code>snapshot</code>, copy it (Ctrl+C, or ⌘C on a Mac), and paste it here.</p>
+            <label class="visually-hidden" for="snapshot-input">Snapshot result</label>
+            <textarea id="snapshot-input" aria-describedby="input-error" spellcheck="false" autocomplete="off" placeholder='{"version": 2, "tables": [ … ] }'></textarea>
+            <p class="error" id="input-error" role="alert" hidden></p>
+            <p class="hint">
+              Keep your database setup in code? You can instead
+              <label class="text-button" for="sql-files">choose your migration files</label>
+              <span class="nowrap">(<code>supabase/migrations/*.sql</code>).</span>
+              <input type="file" id="sql-files" multiple accept=".sql" class="visually-hidden" />
+            </p>
+            <p class="file-list" id="file-list" hidden></p>
+          </li>
+
+          <li class="step">
+            <h3><span class="step-label">Step 3</span> Get the proof and the fix</h3>
+            <p>You'll see which of our attacks worked on the private copy, which ones the fix blocks, and — when it can be fixed automatically — a fix file to run.</p>
+            <div class="row">
+              <button type="button" class="button primary" id="run">Run the check</button>
+              <button type="button" class="text-button" data-demo>Try it on a sample app</button>
+            </div>
+          </li>
+        </ol>
+      </section>
+
+      <section id="progress" class="progress" aria-live="polite" hidden>
+        <h2>Checking</h2>
+        <ol class="progress-steps" id="progress-steps"></ol>
+      </section>
+
+      <section id="results" class="results" aria-labelledby="verdict" hidden>
+        <div class="report">
+          <p class="kicker" id="results-for"></p>
+          <h2 id="verdict" tabindex="-1"></h2>
+          <p class="verdict-detail" id="verdict-detail"></p>
+          <ul class="counts" id="severity-counts"></ul>
+
+          <div class="downloads" id="downloads">
+            <a class="button primary" id="download-fix" download="fix.sql">Download fix.sql</a>
+            <a class="button" id="download-report" download="lockstamp-report.md">Download the report</a>
+            <a class="text-button" id="offer-inline" href="#" hidden>Have us apply it for you</a>
+          </div>
+
+          <div class="coverage" id="coverage" hidden>
+            <h3>Not tested</h3>
+            <p class="hint">These parts of your database couldn't be rebuilt in the test copy, so rules that depend on them weren't checked.</p>
+            <ul id="coverage-list"></ul>
+          </div>
+
+          <div class="block" id="ledger-block">
+            <h3>Attacks we tried</h3>
+            <p class="hint">Tried on a private test copy with two fake users. Your real database was never touched.</p>
+            <div id="ledger"></div>
+          </div>
+
+          <div class="block">
+            <h3>What we found</h3>
+            <div id="findings"></div>
+          </div>
+
+          <div class="results-foot">
+            <button type="button" class="text-button" id="check-again">Check another project</button>
+          </div>
+        </div>
+
+        <aside class="offer" id="offer" hidden>
+          <h3 id="offer-title">Want it fixed and checked by a person?</h3>
+          <p id="offer-text"></p>
+          <p class="offer-note"><span data-seller></span> uses Claude Code, an AI coding agent, to do the coding, and every change is checked with automated tests before delivery.</p>
+          <a class="button accent" id="offer-link" href="#">Get it fixed</a>
+        </aside>
+      </section>
+
+      <section class="privacy split" aria-labelledby="privacy-title">
+        <div>
+          <p class="kicker">Privacy</p>
+          <h2 id="privacy-title">Your database never leaves this tab</h2>
+        </div>
+        <div>
+          <div class="flow" aria-hidden="true">
+            <span class="flow-node">Your SQL editor</span>
+            <span class="flow-arrow">structure only</span>
+            <span class="flow-node strong">This browser tab</span>
+            <span class="flow-arrow">attacks on a copy</span>
+            <span class="flow-node">Your report</span>
+          </div>
+          <p class="section-lede">
+            The check uses a full Postgres database compiled to WebAssembly, running right here. It rebuilds your tables and
+            access rules from the query result, tries the attacks, and throws the copy away. There's no server to send
+            anything to.
+          </p>
+        </div>
+      </section>
+
+      <section id="faq" class="faq split" aria-labelledby="faq-title">
+        <div>
+          <p class="kicker">FAQ</p>
+          <h2 id="faq-title">Questions people ask before running it</h2>
+        </div>
+        <div class="faq-list">
+          <details>
+            <summary>Is the query safe to run on my database?</summary>
+            <p>Yes. It only reads your database's structure — tables, columns, access rules and functions. It doesn't read any rows, doesn't change anything, and doesn't need a password. You can read every line before you run it.</p>
+          </details>
+          <details>
+            <summary>Does my data get uploaded anywhere?</summary>
+            <p>No. The check runs inside this browser tab. What you paste is never sent to a server, and closing the tab deletes it.</p>
+          </details>
+          <details>
+            <summary>Which apps does it work with?</summary>
+            <p>Any app that uses Supabase for its database — including apps built with Lovable (on Lovable Cloud or your own Supabase), Bolt, Replit, v0 and Cursor.</p>
+          </details>
+          <details>
+            <summary>What do I do with fix.sql?</summary>
+            <p>Read it, then run it in the same SQL editor (or add it as a migration). Afterwards, try your app's main features while logged in as a normal user.</p>
+          </details>
+          <details>
+            <summary>Will the fix break my app?</summary>
+            <p>It changes who can see what, which is the point: a feature that showed other users' private data will stop doing that. Rules for data that might be meant to be public — like reviews or product listings — are left for you to decide.</p>
+          </details>
+          <details id="faq-fix" hidden>
+            <summary>I'm not technical. Can you fix it for me?</summary>
+            <p>
+              Yes. <span data-seller></span> applies the fix to your project, tests your main features, and sends you the before-and-after proof,
+              for a fixed price from $300. <span data-seller></span> uses Claude Code, an AI coding agent, to do the coding, and every change is
+              checked with automated tests before delivery.
+            </p>
+          </details>
+          <details>
+            <summary>What doesn't it check?</summary>
+            <p>It doesn't look at your app's code or website for leaked keys, test your live site, or check your login settings or payment flow — and no tool can guarantee an app has no other weaknesses.</p>
+          </details>
+        </div>
+      </section>
+
+      <section class="closing" aria-labelledby="closing-title">
+        <h2 id="closing-title">Find out before someone else does.</h2>
+        <p>Free, about a minute, and nothing leaves your browser.</p>
+        <a class="button accent" href="#check">Run the free check</a>
+      </section>
+    </main>
+
+    <footer class="footer">
+      <p>Lockstamp</p>
+      <p>
+        Sources: “16,000” —
+        <a href="https://techcrunch.com/2026/09/25/some-supabase-customers-are-publicly-exposing-reams-of-peoples-data-to-the-web/" rel="noopener">TechCrunch, 25 Sept 2026</a>,
+        reporting UpGuard's findings. “170 of 1,645” —
+        <a href="https://www.semafor.com/article/05/29/2025/the-hottest-new-vibe-coding-startup-lovable-is-a-sitting-duck-for-hackers" rel="noopener">Semafor, 29 May 2025</a>.
+      </p>
+      <p>Not affiliated with Supabase, Lovable, Bolt or Replit.</p>
+    </footer>
+
+    <script type="module" src="./src/main.ts"></script>
+  </body>
+</html>

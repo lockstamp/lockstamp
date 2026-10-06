@@ -1,0 +1,718 @@
+{
+  "version": 2,
+  "server_version": "18.3",
+  "schemas": [
+    {
+      "name": "public",
+      "anon_usage": true,
+      "authenticated_usage": true
+    }
+  ],
+  "enums": [],
+  "tables": [
+    {
+      "schema": "public",
+      "name": "app_settings",
+      "rls": false,
+      "force_rls": false,
+      "columns": [
+        {
+          "name": "key",
+          "type": "text",
+          "not_null": true,
+          "default": null,
+          "identity": "",
+          "generated": "",
+          "grants": []
+        },
+        {
+          "name": "value",
+          "type": "jsonb",
+          "not_null": true,
+          "default": "'{}'::jsonb",
+          "identity": "",
+          "generated": "",
+          "grants": []
+        }
+      ],
+      "constraints": [
+        {
+          "name": "app_settings_key_not_null",
+          "type": "n",
+          "definition": "NOT NULL key"
+        },
+        {
+          "name": "app_settings_value_not_null",
+          "type": "n",
+          "definition": "NOT NULL value"
+        },
+        {
+          "name": "app_settings_pkey",
+          "type": "p",
+          "definition": "PRIMARY KEY (key)"
+        }
+      ],
+      "grants": [
+        {
+          "role": "anon",
+          "privilege": "INSERT"
+        },
+        {
+          "role": "anon",
+          "privilege": "SELECT"
+        },
+        {
+          "role": "anon",
+          "privilege": "UPDATE"
+        },
+        {
+          "role": "anon",
+          "privilege": "DELETE"
+        },
+        {
+          "role": "anon",
+          "privilege": "TRUNCATE"
+        },
+        {
+          "role": "anon",
+          "privilege": "REFERENCES"
+        },
+        {
+          "role": "anon",
+          "privilege": "TRIGGER"
+        },
+        {
+          "role": "anon",
+          "privilege": "MAINTAIN"
+        },
+        {
+          "role": "authenticated",
+          "privilege": "INSERT"
+        },
+        {
+          "role": "authenticated",
+          "privilege": "SELECT"
+        },
+        {
+          "role": "authenticated",
+          "privilege": "UPDATE"
+        },
+        {
+          "role": "authenticated",
+          "privilege": "DELETE"
+        },
+        {
+          "role": "authenticated",
+          "privilege": "TRUNCATE"
+        },
+        {
+          "role": "authenticated",
+          "privilege": "REFERENCES"
+        },
+        {
+          "role": "authenticated",
+          "privilege": "TRIGGER"
+        },
+        {
+          "role": "authenticated",
+          "privilege": "MAINTAIN"
+        }
+      ]
+    },
+    {
+      "schema": "public",
+      "name": "notes",
+      "rls": true,
+      "force_rls": false,
+      "columns": [
+        {
+          "name": "id",
+          "type": "uuid",
+          "not_null": true,
+          "default": "gen_random_uuid()",
+          "identity": "",
+          "generated": "",
+          "grants": []
+        },
+        {
+          "name": "user_id",
+          "type": "uuid",
+          "not_null": true,
+          "default": null,
+          "identity": "",
+          "generated": "",
+          "grants": []
+        },
+        {
+          "name": "title",
+          "type": "text",
+          "not_null": true,
+          "default": null,
+          "identity": "",
+          "generated": "",
+          "grants": []
+        },
+        {
+          "name": "body",
+          "type": "text",
+          "not_null": false,
+          "default": null,
+          "identity": "",
+          "generated": "",
+          "grants": []
+        },
+        {
+          "name": "is_pinned",
+          "type": "boolean",
+          "not_null": true,
+          "default": "false",
+          "identity": "",
+          "generated": "",
+          "grants": []
+        },
+        {
+          "name": "created_at",
+          "type": "timestamp with time zone",
+          "not_null": true,
+          "default": "now()",
+          "identity": "",
+          "generated": "",
+          "grants": []
+        }
+      ],
+      "constraints": [
+        {
+          "name": "notes_id_not_null",
+          "type": "n",
+          "definition": "NOT NULL id"
+        },
+        {
+          "name": "notes_user_id_not_null",
+          "type": "n",
+          "definition": "NOT NULL user_id"
+        },
+        {
+          "name": "notes_title_not_null",
+          "type": "n",
+          "definition": "NOT NULL title"
+        },
+        {
+          "name": "notes_is_pinned_not_null",
+          "type": "n",
+          "definition": "NOT NULL is_pinned"
+        },
+        {
+          "name": "notes_created_at_not_null",
+          "type": "n",
+          "definition": "NOT NULL created_at"
+        },
+        {
+          "name": "notes_pkey",
+          "type": "p",
+          "definition": "PRIMARY KEY (id)"
+        },
+        {
+          "name": "notes_user_id_fkey",
+          "type": "f",
+          "definition": "FOREIGN KEY (user_id) REFERENCES auth.users(id) ON DELETE CASCADE"
+        }
+      ],
+      "grants": [
+        {
+          "role": "anon",
+          "privilege": "INSERT"
+        },
+        {
+          "role": "anon",
+          "privilege": "SELECT"
+        },
+        {
+          "role": "anon",
+          "privilege": "UPDATE"
+        },
+        {
+          "role": "anon",
+          "privilege": "DELETE"
+        },
+        {
+          "role": "anon",
+          "privilege": "TRUNCATE"
+        },
+        {
+          "role": "anon",
+          "privilege": "REFERENCES"
+        },
+        {
+          "role": "anon",
+          "privilege": "TRIGGER"
+        },
+        {
+          "role": "anon",
+          "privilege": "MAINTAIN"
+        },
+        {
+          "role": "authenticated",
+          "privilege": "INSERT"
+        },
+        {
+          "role": "authenticated",
+          "privilege": "SELECT"
+        },
+        {
+          "role": "authenticated",
+          "privilege": "UPDATE"
+        },
+        {
+          "role": "authenticated",
+          "privilege": "DELETE"
+        },
+        {
+          "role": "authenticated",
+          "privilege": "TRUNCATE"
+        },
+        {
+          "role": "authenticated",
+          "privilege": "REFERENCES"
+        },
+        {
+          "role": "authenticated",
+          "privilege": "TRIGGER"
+        },
+        {
+          "role": "authenticated",
+          "privilege": "MAINTAIN"
+        }
+      ]
+    },
+    {
+      "schema": "public",
+      "name": "profiles",
+      "rls": false,
+      "force_rls": false,
+      "columns": [
+        {
+          "name": "id",
+          "type": "uuid",
+          "not_null": true,
+          "default": null,
+          "identity": "",
+          "generated": "",
+          "grants": []
+        },
+        {
+          "name": "full_name",
+          "type": "text",
+          "not_null": false,
+          "default": null,
+          "identity": "",
+          "generated": "",
+          "grants": []
+        },
+        {
+          "name": "avatar_url",
+          "type": "text",
+          "not_null": false,
+          "default": null,
+          "identity": "",
+          "generated": "",
+          "grants": []
+        },
+        {
+          "name": "role",
+          "type": "text",
+          "not_null": true,
+          "default": "'user'::text",
+          "identity": "",
+          "generated": "",
+          "grants": []
+        },
+        {
+          "name": "created_at",
+          "type": "timestamp with time zone",
+          "not_null": true,
+          "default": "now()",
+          "identity": "",
+          "generated": "",
+          "grants": []
+        }
+      ],
+      "constraints": [
+        {
+          "name": "profiles_id_not_null",
+          "type": "n",
+          "definition": "NOT NULL id"
+        },
+        {
+          "name": "profiles_role_not_null",
+          "type": "n",
+          "definition": "NOT NULL role"
+        },
+        {
+          "name": "profiles_created_at_not_null",
+          "type": "n",
+          "definition": "NOT NULL created_at"
+        },
+        {
+          "name": "profiles_pkey",
+          "type": "p",
+          "definition": "PRIMARY KEY (id)"
+        },
+        {
+          "name": "profiles_id_fkey",
+          "type": "f",
+          "definition": "FOREIGN KEY (id) REFERENCES auth.users(id) ON DELETE CASCADE"
+        }
+      ],
+      "grants": [
+        {
+          "role": "anon",
+          "privilege": "INSERT"
+        },
+        {
+          "role": "anon",
+          "privilege": "SELECT"
+        },
+        {
+          "role": "anon",
+          "privilege": "UPDATE"
+        },
+        {
+          "role": "anon",
+          "privilege": "DELETE"
+        },
+        {
+          "role": "anon",
+          "privilege": "TRUNCATE"
+        },
+        {
+          "role": "anon",
+          "privilege": "REFERENCES"
+        },
+        {
+          "role": "anon",
+          "privilege": "TRIGGER"
+        },
+        {
+          "role": "anon",
+          "privilege": "MAINTAIN"
+        },
+        {
+          "role": "authenticated",
+          "privilege": "INSERT"
+        },
+        {
+          "role": "authenticated",
+          "privilege": "SELECT"
+        },
+        {
+          "role": "authenticated",
+          "privilege": "UPDATE"
+        },
+        {
+          "role": "authenticated",
+          "privilege": "DELETE"
+        },
+        {
+          "role": "authenticated",
+          "privilege": "TRUNCATE"
+        },
+        {
+          "role": "authenticated",
+          "privilege": "REFERENCES"
+        },
+        {
+          "role": "authenticated",
+          "privilege": "TRIGGER"
+        },
+        {
+          "role": "authenticated",
+          "privilege": "MAINTAIN"
+        }
+      ]
+    },
+    {
+      "schema": "public",
+      "name": "subscriptions",
+      "rls": false,
+      "force_rls": false,
+      "columns": [
+        {
+          "name": "id",
+          "type": "uuid",
+          "not_null": true,
+          "default": "gen_random_uuid()",
+          "identity": "",
+          "generated": "",
+          "grants": []
+        },
+        {
+          "name": "user_id",
+          "type": "uuid",
+          "not_null": true,
+          "default": null,
+          "identity": "",
+          "generated": "",
+          "grants": []
+        },
+        {
+          "name": "plan",
+          "type": "text",
+          "not_null": true,
+          "default": "'free'::text",
+          "identity": "",
+          "generated": "",
+          "grants": []
+        },
+        {
+          "name": "stripe_customer_id",
+          "type": "text",
+          "not_null": false,
+          "default": null,
+          "identity": "",
+          "generated": "",
+          "grants": []
+        },
+        {
+          "name": "current_period_end",
+          "type": "timestamp with time zone",
+          "not_null": false,
+          "default": null,
+          "identity": "",
+          "generated": "",
+          "grants": []
+        }
+      ],
+      "constraints": [
+        {
+          "name": "subscriptions_id_not_null",
+          "type": "n",
+          "definition": "NOT NULL id"
+        },
+        {
+          "name": "subscriptions_user_id_not_null",
+          "type": "n",
+          "definition": "NOT NULL user_id"
+        },
+        {
+          "name": "subscriptions_plan_not_null",
+          "type": "n",
+          "definition": "NOT NULL plan"
+        },
+        {
+          "name": "subscriptions_pkey",
+          "type": "p",
+          "definition": "PRIMARY KEY (id)"
+        },
+        {
+          "name": "subscriptions_user_id_fkey",
+          "type": "f",
+          "definition": "FOREIGN KEY (user_id) REFERENCES auth.users(id)"
+        }
+      ],
+      "grants": [
+        {
+          "role": "anon",
+          "privilege": "INSERT"
+        },
+        {
+          "role": "anon",
+          "privilege": "SELECT"
+        },
+        {
+          "role": "anon",
+          "privilege": "UPDATE"
+        },
+        {
+          "role": "anon",
+          "privilege": "DELETE"
+        },
+        {
+          "role": "anon",
+          "privilege": "TRUNCATE"
+        },
+        {
+          "role": "anon",
+          "privilege": "REFERENCES"
+        },
+        {
+          "role": "anon",
+          "privilege": "TRIGGER"
+        },
+        {
+          "role": "anon",
+          "privilege": "MAINTAIN"
+        },
+        {
+          "role": "authenticated",
+          "privilege": "INSERT"
+        },
+        {
+          "role": "authenticated",
+          "privilege": "SELECT"
+        },
+        {
+          "role": "authenticated",
+          "privilege": "UPDATE"
+        },
+        {
+          "role": "authenticated",
+          "privilege": "DELETE"
+        },
+        {
+          "role": "authenticated",
+          "privilege": "TRUNCATE"
+        },
+        {
+          "role": "authenticated",
+          "privilege": "REFERENCES"
+        },
+        {
+          "role": "authenticated",
+          "privilege": "TRIGGER"
+        },
+        {
+          "role": "authenticated",
+          "privilege": "MAINTAIN"
+        }
+      ]
+    }
+  ],
+  "policies": [
+    {
+      "schema": "public",
+      "table": "notes",
+      "name": "Enable insert for authenticated users only",
+      "permissive": "PERMISSIVE",
+      "roles": [
+        "authenticated"
+      ],
+      "cmd": "INSERT",
+      "using": null,
+      "with_check": "true"
+    },
+    {
+      "schema": "public",
+      "table": "notes",
+      "name": "Enable read access for all users",
+      "permissive": "PERMISSIVE",
+      "roles": [
+        "public"
+      ],
+      "cmd": "SELECT",
+      "using": "true",
+      "with_check": null
+    },
+    {
+      "schema": "public",
+      "table": "notes",
+      "name": "Users can update their own notes",
+      "permissive": "PERMISSIVE",
+      "roles": [
+        "public"
+      ],
+      "cmd": "UPDATE",
+      "using": "(auth.uid() = user_id)",
+      "with_check": null
+    }
+  ],
+  "functions": [
+    {
+      "schema": "public",
+      "name": "get_all_emails",
+      "args": "",
+      "definition": "CREATE OR REPLACE FUNCTION public.get_all_emails()\n RETURNS TABLE(email text)\n LANGUAGE sql\n SECURITY DEFINER\nAS $function$\n  select email from auth.users;\n$function$\n",
+      "anon_execute": true,
+      "authenticated_execute": true
+    },
+    {
+      "schema": "public",
+      "name": "handle_new_user",
+      "args": "",
+      "definition": "CREATE OR REPLACE FUNCTION public.handle_new_user()\n RETURNS trigger\n LANGUAGE plpgsql\n SECURITY DEFINER\n SET search_path TO 'public'\nAS $function$\nbegin\n  insert into public.profiles (id, full_name)\n  values (new.id, new.raw_user_meta_data ->> 'full_name');\n  return new;\nend;\n$function$\n",
+      "anon_execute": true,
+      "authenticated_execute": true
+    }
+  ],
+  "views": [
+    {
+      "schema": "public",
+      "name": "note_counts",
+      "materialized": false,
+      "definition": " SELECT user_id,\n    count(*) AS total\n   FROM notes\n  GROUP BY user_id;",
+      "options": null,
+      "grants": [
+        {
+          "role": "anon",
+          "privilege": "INSERT"
+        },
+        {
+          "role": "anon",
+          "privilege": "SELECT"
+        },
+        {
+          "role": "anon",
+          "privilege": "UPDATE"
+        },
+        {
+          "role": "anon",
+          "privilege": "DELETE"
+        },
+        {
+          "role": "anon",
+          "privilege": "TRUNCATE"
+        },
+        {
+          "role": "anon",
+          "privilege": "REFERENCES"
+        },
+        {
+          "role": "anon",
+          "privilege": "TRIGGER"
+        },
+        {
+          "role": "anon",
+          "privilege": "MAINTAIN"
+        },
+        {
+          "role": "authenticated",
+          "privilege": "INSERT"
+        },
+        {
+          "role": "authenticated",
+          "privilege": "SELECT"
+        },
+        {
+          "role": "authenticated",
+          "privilege": "UPDATE"
+        },
+        {
+          "role": "authenticated",
+          "privilege": "DELETE"
+        },
+        {
+          "role": "authenticated",
+          "privilege": "TRUNCATE"
+        },
+        {
+          "role": "authenticated",
+          "privilege": "REFERENCES"
+        },
+        {
+          "role": "authenticated",
+          "privilege": "TRIGGER"
+        },
+        {
+          "role": "authenticated",
+          "privilege": "MAINTAIN"
+        }
+      ]
+    }
+  ],
+  "triggers": [],
+  "buckets": [
+    {
+      "id": "avatars",
+      "public": true
+    }
+  ]
+}
