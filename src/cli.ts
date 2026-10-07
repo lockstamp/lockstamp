@@ -5,6 +5,8 @@ import { parseArgs } from "node:util";
 import { runGuard, SNAPSHOT_QUERY } from "./index.js";
 import { plural } from "./describe.js";
 import { countBySeverity } from "./report.js";
+import { renderSummary } from "./summary.js";
+import { SEVERITY_ORDER } from "./types.js";
 
 const HELP = `lockstamp — find and fix database security holes in Supabase apps, with proof.
 
@@ -18,10 +20,14 @@ Options:
   --schema <name>     Schema exposed through the API (default: public; repeatable)
   --no-verify         Skip the before/after attack tests
   --no-code           Skip scanning code for leaked keys
+  --fail-on <level>   Exit with 1 at this severity or worse: critical, high (default), medium, low, never
   -h, --help          Show this help
 
-Exit code is 1 when critical or high problems are found, so it can fail a CI pipeline.
+Writes report.md, summary.md (short, for a merge request comment), fix.sql and results.json.
+The exit code lets a CI pipeline fail when problems at the --fail-on level are found.
 `;
+
+const LEVELS = ["critical", "high", "medium", "low", "never"] as const;
 
 async function main(): Promise<void> {
   const { values, positionals } = parseArgs({
@@ -34,6 +40,7 @@ async function main(): Promise<void> {
       schema: { type: "string", multiple: true },
       "no-verify": { type: "boolean", default: false },
       "no-code": { type: "boolean", default: false },
+      "fail-on": { type: "string", default: "high" },
       help: { type: "boolean", short: "h", default: false },
     },
   });
@@ -41,6 +48,8 @@ async function main(): Promise<void> {
     process.stdout.write(HELP);
     return;
   }
+  const failOn = values["fail-on"] as (typeof LEVELS)[number];
+  if (!LEVELS.includes(failOn)) throw new Error(`--fail-on must be one of: ${LEVELS.join(", ")}`);
   if (values["snapshot-query"]) {
     process.stdout.write(SNAPSHOT_QUERY);
     return;
@@ -61,6 +70,10 @@ async function main(): Promise<void> {
   const outDir = resolve(values.out ?? join(projectDir, "lockstamp-report"));
   await mkdir(outDir, { recursive: true });
   await writeFile(join(outDir, "report.md"), result.report);
+  await writeFile(
+    join(outDir, "summary.md"),
+    renderSummary({ tablesChecked: result.schema.tables.length, findings: result.findings, proof: result.proof, loadIssues: result.loadIssues }),
+  );
   await writeFile(join(outDir, "fix.sql"), result.fixSql);
   await writeFile(
     join(outDir, "results.json"),
@@ -78,7 +91,10 @@ async function main(): Promise<void> {
     console.log(`  WARNING: ${plural(result.fixIssues.length, "statement")} in fix.sql failed to apply — review it before use`);
   }
   console.log(`  report: ${join(outDir, "report.md")}`);
-  if (c.critical + c.high > 0) process.exitCode = 1;
+  if (failOn !== "never") {
+    const levels = SEVERITY_ORDER.slice(0, SEVERITY_ORDER.indexOf(failOn) + 1);
+    if (levels.some((s) => c[s] > 0)) process.exitCode = 1;
+  }
 }
 
 main().catch((err: unknown) => {

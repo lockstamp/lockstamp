@@ -11,13 +11,14 @@ npm install
 npm run guard -- path/to/your-app
 ```
 
-It reads your `supabase/migrations` folder and your source code, then writes three files to `your-app/lockstamp-report/`:
+It reads your `supabase/migrations` folder and your source code, then writes these files to `your-app/lockstamp-report/`:
 
 | File | What it is |
 |---|---|
 | `report.md` | Plain-English findings, plus a before/after table of attacks that were tried |
 | `fix.sql` | A reviewable migration that closes the database problems |
 | `results.json` | Machine-readable findings and attack results |
+| `summary.md` | A short version for a merge request comment |
 
 ### In the browser
 
@@ -87,9 +88,21 @@ lockstamp [project-folder] [options]
   --schema <name>     Schema exposed through the API (default: public; repeatable)
   --no-verify         Skip the before/after attack tests
   --no-code           Skip scanning code for leaked keys
+  --fail-on <level>   Exit with 1 at this severity or worse: critical, high (default), medium, low, never
 ```
 
-The exit code is `1` when critical or high problems are found, so it can fail a CI pipeline.
+The exit code is `1` when problems at the `--fail-on` level (default: high) are found, so it can fail a CI pipeline.
+
+## In GitLab CI
+
+Add this to a project's `.gitlab-ci.yml`:
+
+```yaml
+include:
+  - remote: "https://raw.githubusercontent.com/lockstamp/lockstamp/main/ci/lockstamp.gitlab-ci.yml"
+```
+
+The `lockstamp` job runs in any project with `supabase/migrations`. It fails on high or critical problems (change this with the `LOCKSTAMP_FAIL_ON` variable) and attaches the report to the job, linked from the merge request.
 
 ## Limits
 

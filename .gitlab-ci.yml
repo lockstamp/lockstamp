@@ -1,0 +1,83 @@
+# Lockstamp's own pipeline on GitLab: test the checker, prove the generated fix closes every attack
+# on the demo app, package the CLI, publish the free web checker, and re-check nightly.
+stages:
+  - test
+  - secure
+  - package
+  - release
+  - monitor
+
+default:
+  image: node:22
+  cache:
+    key:
+      files:
+        - package-lock.json
+    paths:
+      - .npm/
+  # `npm ci` also runs the build (the package's prepare script).
+  before_script:
+    - npm ci --cache .npm --prefer-offline --no-audit --no-fund
+
+unit-tests:
+  stage: test
+  script:
+    - npm test
+  rules:
+    - if: $CI_PIPELINE_SOURCE != "schedule"
+
+# The demo app is deliberately insecure. The gate here is that the fix closes every attack it
+# targets: any attack still possible after an automatic fix fails the job.
+attack-proof:
+  stage: secure
+  script:
+    - node dist/cli.js examples/vibe-notes --fail-on never --out lockstamp-report
+    - cat lockstamp-report/summary.md
+    - >
+      node -e "const r = require('./lockstamp-report/results.json');
+      const open = r.proof.filter((p) => p.before === true && p.after === true && p.autoFixed);
+      if (open.length) { console.error('Still possible after the fix:', open); process.exit(1); }
+      console.log('Every attack the fix targets is blocked.');"
+  artifacts:
+    when: always
+    expose_as: "Lockstamp report"
+    paths:
+      - lockstamp-report/
+  rules:
+    - if: $CI_PIPELINE_SOURCE != "schedule"
+
+package:
+  stage: package
+  script:
+    - npm pack
+  artifacts:
+    paths:
+      - lockstamp-*.tgz
+  rules:
+    - if: $CI_PIPELINE_SOURCE != "schedule"
+
+# GitLab Pages: the free in-browser checker.
+pages:
+  stage: release
+  script:
+    - npm run web:build
+    - rm -rf public && mv dist-web public
+  artifacts:
+    paths:
+      - public
+  rules:
+    - if: $CI_COMMIT_BRANCH == $CI_DEFAULT_BRANCH && $CI_PIPELINE_SOURCE != "schedule"
+
+# Scheduled pipeline: re-run the full check so a regression in the checker or its database engine
+# shows up as a failed pipeline (which can trigger the Lockstamp flow).
+nightly-recheck:
+  stage: monitor
+  script:
+    - npm test
+    - node dist/cli.js examples/vibe-notes --fail-on never --out lockstamp-report
+  artifacts:
+    when: always
+    paths:
+      - lockstamp-report/
+  rules:
+    - if: $CI_PIPELINE_SOURCE == "schedule"

@@ -1,0 +1,28 @@
+# Lockstamp for any GitLab project with Supabase migrations: on every pipeline it rebuilds the
+# database from supabase/migrations in a private in-memory copy, tries real attacks before and after
+# its generated fix, and fails the job when problems at LOCKSTAMP_FAIL_ON or worse remain.
+#
+# Add to your .gitlab-ci.yml:
+#   include:
+#     - remote: "https://raw.githubusercontent.com/lockstamp/lockstamp/main/ci/lockstamp.gitlab-ci.yml"
+#
+# The report (report.md, summary.md, fix.sql, results.json) is attached to the job and linked from
+# the merge request.
+
+lockstamp:
+  stage: test
+  image: node:22
+  variables:
+    LOCKSTAMP_FAIL_ON: high
+  script:
+    - npx --yes github:lockstamp/lockstamp . --fail-on "$LOCKSTAMP_FAIL_ON" --out lockstamp-report
+  after_script:
+    - cat lockstamp-report/summary.md 2>/dev/null || true
+  artifacts:
+    when: always
+    expose_as: "Lockstamp report"
+    paths:
+      - lockstamp-report/
+  rules:
+    - exists:
+        - supabase/migrations/*.sql

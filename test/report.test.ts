@@ -1,6 +1,7 @@
 import { describe, expect, it } from "vitest";
 import { describeStatement, explainError } from "../src/describe.js";
 import { renderReport, type ReportInput } from "../src/report.js";
+import { renderSummary } from "../src/summary.js";
 import type { Finding, ProofRow } from "../src/types.js";
 
 const finding = (over: Partial<Finding>): Finding => ({
@@ -108,6 +109,34 @@ describe("the report only says what is true", () => {
   it("doesn't claim to have scanned app code it never saw", () => {
     expect(report({})).toMatch(/or look at your app's code/);
     expect(report({ scannedCode: true })).toMatch(/or in the code files it was given/);
+  });
+});
+
+describe("the merge request summary", () => {
+  it("leads with the verdict, shows the attack table and caps it", () => {
+    const proof = Array.from({ length: 12 }, (_, i) => ({
+      table: "public.notes",
+      test: `Attack ${i + 1}`,
+      before: true,
+      after: false,
+      autoFixed: true,
+    }));
+    const text = renderSummary({ tablesChecked: 1, findings: [finding({})], proof, loadIssues: [] });
+    expect(text.split("\n")[0]).toBe("### Lockstamp: 12 attacks worked on a private copy of this database");
+    expect(text).toMatch(/The fix blocks all of them\. \*\*1 critical\*\*/);
+    expect(text).toMatch(/\| notes \| Attack 1 \| 🔓 Possible \| 🔒 Blocked \|/);
+    expect(text).toMatch(/2 more in the report/);
+    expect(text).not.toMatch(/public\./);
+  });
+
+  it("never reads as an all-clear when parts weren't tested", () => {
+    const text = renderSummary({
+      tablesChecked: 1,
+      findings: [],
+      proof: [],
+      loadIssues: [{ file: "snapshot", statement: "create schema x", error: "boom" }],
+    });
+    expect(text).toMatch(/not an all-clear/);
   });
 });
 
