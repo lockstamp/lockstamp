@@ -1182,6 +1182,23 @@ a {
   top: 2rem;
 }
 
+.advisor-note {
+  margin-top: 1.25rem;
+  max-width: 44ch;
+  padding: 0.85rem 1rem;
+  border-left: 3px solid var(--accent);
+  border-radius: 0 var(--radius) var(--radius) 0;
+  background: var(--sheet);
+  color: var(--ink);
+  font-size: 1rem;
+  line-height: 1.5;
+}
+
+.advisor-note a {
+  color: var(--accent);
+  text-underline-offset: 0.2em;
+}
+
 .assurances {
   list-style: none;
   margin: 1.75rem 0 0;

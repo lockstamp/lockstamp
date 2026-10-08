@@ -63,7 +63,7 @@ const ui = {
   offerLink: byId<HTMLAnchorElement>("offer-link"),
   offerTitle: byId("offer-title"),
   offerText: byId("offer-text"),
-  faqFix: byId("faq-fix"),
+  faqFix: byId<HTMLDetailsElement>("faq-fix"),
 };
 
 let migrationFiles: { file: string; sql: string }[] = [];
@@ -85,6 +85,14 @@ function el<K extends keyof HTMLElementTagNameMap>(
 }
 
 ui.faqFix.hidden = !OFFERS_LIVE;
+for (const el of document.querySelectorAll<HTMLElement>("[data-offer-only]")) el.hidden = !OFFERS_LIVE;
+// Links to the "fix it for me" FAQ item open it as well as scrolling to it.
+for (const link of document.querySelectorAll<HTMLAnchorElement>('a[href="#faq-fix"]')) {
+  link.addEventListener("click", () => {
+    ui.faqFix.open = true;
+  });
+}
+if (OFFERS_LIVE && location.hash === "#faq-fix") ui.faqFix.open = true;
 for (const name of document.querySelectorAll("[data-seller]")) name.textContent = SELLER;
 for (const link of document.querySelectorAll<HTMLAnchorElement>("a[data-fix-link]")) link.href = FIX_URL;
 
