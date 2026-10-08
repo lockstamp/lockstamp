@@ -69,12 +69,12 @@ Read the [full report](examples/vibe-notes/lockstamp-report/report.md) and the [
 
 We ran Lockstamp offline against 35 public GitHub projects built with Lovable and Supabase (public code only; no live sites were touched, and individual results aren't published). Of the 29 that had a migrations folder:
 
-- 27 could be rebuilt from their migrations (1,242 tables); 2 couldn't, because parts of their database were changed by hand in the Supabase dashboard.
-- Attacks worked in 14 of them, 115 in total.
-- 23 of those attacks, in 5 projects, reached clearly private data. The generated fix blocked all 23.
+- 27 could be rebuilt from their migrations (1,242 tables); 2 most likely couldn't because parts of their database were changed by hand in the Supabase dashboard.
+- In those rebuilds, at least one attack worked in 14 projects, 115 attacks in total.
+- The tool rated 23 of those attacks, in 5 projects, as clear holes, and its fix blocked all 23 in the rebuilds. A closer look at each one against the project's code found 12 serious ones, all in one project. The rest were minor, probably not present on the live site, or meant to be public.
 - The other 92 were left for a human decision: data that may be meant to be public, or rules too complex to change safely without context.
 - The fix applied cleanly every time.
-- 16 secret keys were found committed to code.
+- 16 key-like strings were flagged in code; 14 were fake test values, and 2 were the same real-looking Supabase secret key in one project.
 
 ## Options
 
