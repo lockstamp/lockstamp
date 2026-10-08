@@ -1,8 +1,8 @@
 # Lockstamp
 
-Find and fix the security holes that AI app builders (Lovable, Bolt, Replit, v0) commonly leave in Supabase apps — and prove the fix works before you ship it.
+Find and fix the security holes that AI app builders (Lovable, Bolt, Replit, v0) commonly leave in Supabase apps, and prove the fix works before you ship it.
 
-**Try it free in your browser: [lockstamp.github.io](https://lockstamp.github.io/)** — nothing is uploaded.
+**Try it free in your browser: [lockstamp.github.io](https://lockstamp.github.io/)**. Nothing is uploaded.
 
 Lockstamp is an independent project. It is not affiliated with or endorsed by Supabase, Lovable, Bolt or Replit.
 
@@ -22,7 +22,7 @@ It reads your `supabase/migrations` folder and your source code, then writes the
 
 ### In the browser
 
-`npm run web:dev` starts a web version of the same check. Paste a snapshot (or pick migration files) and it runs entirely in the browser tab — the database engine is compiled to WebAssembly, so nothing is uploaded. `npm run web:build` produces a static site in `dist-web/` that any static host can serve.
+`npm run web:dev` starts a web version of the same check. Paste a snapshot (or pick migration files) and it runs entirely in the browser tab. The database engine is compiled to WebAssembly, so nothing is uploaded. `npm run web:build` produces a static site in `dist-web/` that any static host can serve.
 
 ### No migrations folder? Use a snapshot
 
@@ -32,7 +32,7 @@ If your app was built in the Supabase dashboard (or your migrations don't match 
 2. Copy the single `snapshot` result into a file, e.g. `snapshot.json`.
 3. Run `npm run guard -- --snapshot snapshot.json`.
 
-The query is read-only and collects only your database's structure — tables, columns, access rules, functions, views and triggers. It never reads rows of data, and no passwords are involved.
+The query is read-only and collects only your database's structure: tables, columns, access rules, functions, views and triggers. It never reads rows of data, and no passwords are involved.
 
 ## What it checks
 
@@ -43,7 +43,7 @@ The query is read-only and collects only your database's structure — tables, c
 - **Views** that skip Row Level Security
 - **Security-definer functions** that expose `auth.users` to the public
 - **Public storage buckets**
-- **Secret keys in code**: Supabase `service_role` / `sb_secret_`, Stripe, OpenAI, Anthropic, AWS, GitHub tokens, private keys, and secrets in `VITE_` / `NEXT_PUBLIC_` variables (which get bundled into the browser) — and, in snapshot mode, keys written into database functions
+- **Secret keys in code**: Supabase `service_role` / `sb_secret_`, Stripe, OpenAI, Anthropic, AWS, GitHub tokens, private keys, and secrets in `VITE_` / `NEXT_PUBLIC_` variables (which get bundled into the browser), and in snapshot mode, keys written into database functions
 
 ## How the proof works
 
@@ -70,7 +70,7 @@ Read the [full report](examples/vibe-notes/lockstamp-report/report.md) and the [
 We ran Lockstamp offline against 35 public GitHub projects built with Lovable and Supabase (public code only; no live sites were touched, and individual results aren't published). Of the 29 that had a migrations folder:
 
 - 27 could be rebuilt from their migrations (1,242 tables); 2 couldn't, because parts of their database were changed by hand in the Supabase dashboard.
-- Attacks worked in 14 of them — 115 in total.
+- Attacks worked in 14 of them, 115 in total.
 - 23 of those attacks, in 5 projects, reached clearly private data. The generated fix blocked all 23.
 - The other 92 were left for a human decision: data that may be meant to be public, or rules too complex to change safely without context.
 - The fix applied cleanly every time.

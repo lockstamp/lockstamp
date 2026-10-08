@@ -5,8 +5,8 @@
       "severity": "critical",
       "target": "public.app_settings",
       "title": "Row Level Security is off for public.app_settings",
-      "plain": "Anyone who has your app's public key — it's visible in your website's code — can read, add, change and delete every row in \"app_settings\".",
-      "fix": "Turn on Row Level Security. The fix allows read-only access for now — decide whether \"app_settings\" should be public at all.",
+      "plain": "Anyone who has your app's public key (it's visible in your website's code) can read, add, change and delete every row in \"app_settings\".",
+      "fix": "Turn on Row Level Security. The fix allows read-only access for now. Decide whether \"app_settings\" should be public at all.",
       "autoFixed": true
     },
     {
@@ -14,7 +14,7 @@
       "severity": "critical",
       "target": "public.profiles",
       "title": "Row Level Security is off for public.profiles",
-      "plain": "Anyone who has your app's public key — it's visible in your website's code — can read, add, change and delete every row in \"profiles\".",
+      "plain": "Anyone who has your app's public key (it's visible in your website's code) can read, add, change and delete every row in \"profiles\".",
       "fix": "Turn on Row Level Security and add rules so each user can only reach their own rows (matched on id).",
       "autoFixed": true
     },
@@ -23,7 +23,7 @@
       "severity": "critical",
       "target": "public.subscriptions",
       "title": "Row Level Security is off for public.subscriptions",
-      "plain": "Anyone who has your app's public key — it's visible in your website's code — can read, add, change and delete every row in \"subscriptions\".",
+      "plain": "Anyone who has your app's public key (it's visible in your website's code) can read, add, change and delete every row in \"subscriptions\".",
       "fix": "Turn on Row Level Security so each user can only read their own rows. Changes to \"subscriptions\" should come only from your server (for example a payment webhook or an admin function).",
       "autoFixed": true
     },
@@ -48,7 +48,7 @@
     {
       "rule": "policy_always_true",
       "severity": "high",
-      "target": "public.notes — rule \"Enable insert for authenticated users only\"",
+      "target": "public.notes, rule \"Enable insert for authenticated users only\"",
       "title": "Rule \"Enable insert for authenticated users only\" on public.notes lets users reach other users' rows",
       "plain": "Any logged-in user can add rows to \"notes\" that claim to belong to a different user.",
       "fix": "Replace this rule with one that only matches rows where user_id is the current user.",
@@ -57,7 +57,7 @@
     {
       "rule": "policy_always_true",
       "severity": "high",
-      "target": "public.notes — rule \"Enable read access for all users\"",
+      "target": "public.notes, rule \"Enable read access for all users\"",
       "title": "Rule \"Enable read access for all users\" on public.notes lets users read other users' rows",
       "plain": "Anyone, even without logging in, can see every user's rows in \"notes\", not just their own.",
       "fix": "Replace this rule with one that only matches rows where user_id is the current user.",

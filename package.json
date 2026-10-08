@@ -1,7 +1,7 @@
 {
   "name": "lockstamp",
   "version": "0.1.0",
-  "description": "Find and fix Supabase security holes in AI-built apps (Lovable, Bolt, Replit) — with proof that the fix works.",
+  "description": "Find and fix Supabase security holes in AI-built apps (Lovable, Bolt, Replit), with proof that the fix works.",
   "type": "module",
   "license": "MIT",
   "bin": {

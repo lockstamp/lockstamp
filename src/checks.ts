@@ -101,7 +101,7 @@ function checkFunctions(schema: DbSchema): Finding[] {
         severity: "medium",
         target: label(f),
         title: `Function ${f.schema}.${f.name} can change data with full permissions`,
-        plain: `"${f.name}" skips your access rules, and ${who(f)} can call it. Its name suggests it deletes data or changes rights — check that it verifies who is calling.`,
+        plain: `"${f.name}" skips your access rules, and ${who(f)} can call it. Its name suggests it deletes data or changes rights, so check that it verifies who is calling.`,
         fix: `Add a check inside the function (for example that the caller is an admin), or remove API access to it.`,
         autoFixed: false,
       });
@@ -153,9 +153,9 @@ function checkTable(t: Table): Finding[] {
       severity: "critical",
       target: name,
       title: `Row Level Security is off for ${name}`,
-      plain: `Anyone who has your app's public key — it's visible in your website's code — can ${listVerbs(privileges)} every row in "${t.name}".`,
+      plain: `Anyone who has your app's public key (it's visible in your website's code) can ${listVerbs(privileges)} every row in "${t.name}".`,
       fix: !owned
-        ? `Turn on Row Level Security. The fix allows read-only access for now — decide whether "${t.name}" should be public at all.`
+        ? `Turn on Row Level Security. The fix allows read-only access for now. Decide whether "${t.name}" should be public at all.`
         : t.sensitive
           ? `Turn on Row Level Security so each user can only read their own rows. Changes to "${t.name}" should come only from your server (for example a payment webhook or an admin function).`
           : `Turn on Row Level Security and add rules so each user can only reach their own rows (matched on ${t.ownerColumns.join(", ")}).`,
@@ -182,7 +182,7 @@ function checkTable(t: Table): Finding[] {
     const audience = openAudience(p);
     if (audience === null) continue;
     const who = audience === "anyone" ? "Anyone, even without logging in," : "Any logged-in user";
-    const target = `${name} — rule "${p.name}"`;
+    const target = `${name}, rule "${p.name}"`;
 
     if (owned && p.cmd !== "SELECT") {
       findings.push({
@@ -261,7 +261,7 @@ function openReadFinding(t: Table, p: Policy, who: string, target: string): Find
       severity: "low",
       target,
       title: `Everyone can read ${name}`,
-      plain: `${who} can read every row in "${t.name}". That looks intended for this kind of data — just make sure no private columns are stored in it.`,
+      plain: `${who} can read every row in "${t.name}". That looks intended for this kind of data. Just make sure no private columns are stored in it.`,
       fix: `If some rows or columns are private (drafts, contact details), limit who can read them.`,
       autoFixed: false,
     };
@@ -270,7 +270,7 @@ function openReadFinding(t: Table, p: Policy, who: string, target: string): Find
     rule: "open_read_review",
     severity: "medium",
     target,
-    title: `${name} is readable by ${who === "Any logged-in user" ? "any logged-in user" : "anyone"} — is that intended?`,
+    title: `${name} is readable by ${who === "Any logged-in user" ? "any logged-in user" : "anyone"}. Is that intended?`,
     plain: `${who} can read every user's rows in "${t.name}". That's fine for public content, but a leak if these rows are personal.`,
     fix: `If each user's rows are private, replace this rule with one that only matches rows where ${t.ownerColumns[0]} is the current user.`,
     autoFixed: false,

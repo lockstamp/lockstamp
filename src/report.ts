@@ -67,7 +67,7 @@ export function renderReport(r: ReportInput): string {
     summary.push(`${plural(proven.length, "attack")} worked on a private test copy of your database.`);
     if (decisions === proven.length) {
       summary.push(
-        `${proven.length === 1 ? "It involves" : "They involve"} data that may be meant to be public, like reviews or product listings — each one is marked "Needs your decision" below.`,
+        `${proven.length === 1 ? "It involves" : "They involve"} data that may be meant to be public, like reviews or product listings. Each one is marked "Needs your decision" below.`,
       );
     } else {
       summary.push(fixOutcome(proven.length, blockedByFix));
@@ -98,7 +98,7 @@ export function renderReport(r: ReportInput): string {
       if (stillOpen > 0) sentences.push(`${stillOpen} still ${stillOpen === 1 ? "works" : "work"} after it and ${stillOpen === 1 ? "needs" : "need"} a closer look.`);
       if (decisions > 0) {
         sentences.push(
-          `${decisions} ${decisions === 1 ? "involves" : "involve"} data that may be meant to be public, or rules the tool won't change on its own — marked "Needs your decision" and explained in the findings.`,
+          `${decisions} ${decisions === 1 ? "involves" : "involve"} data that may be meant to be public, or rules the tool won't change on its own, marked "Needs your decision" and explained in the findings.`,
         );
       }
     }
@@ -123,7 +123,7 @@ export function renderReport(r: ReportInput): string {
   const steps: string[] = [];
   if (leakedKeys) {
     steps.push(
-      "Replace (rotate) every leaked key listed above in its provider's dashboard **today** — removing it from the code isn't enough, because old versions of your site still contain it.",
+      "Replace (rotate) every leaked key listed above in its provider's dashboard **today**. Removing it from the code isn't enough, because old versions of your site still contain it.",
     );
   }
   if (hasFix) {

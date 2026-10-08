@@ -138,7 +138,7 @@ function lostRuleFinding(table: string, input: InputKind): Finding {
     fix:
       input === "snapshot"
         ? `Have a person review the access rules on "${name}": the parts listed as not tested weren't rebuilt, so its attacks weren't tried.`
-        : "Run the check with a snapshot from your SQL editor instead — it captures the live database, including helper functions kept outside the public schema. If it still happens, have a person review this table's rules.",
+        : "Run the check with a snapshot from your SQL editor instead. It captures the live database, including helper functions kept outside the public schema. If it still happens, have a person review this table's rules.",
     autoFixed: false,
   };
 }

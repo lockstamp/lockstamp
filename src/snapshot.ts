@@ -200,7 +200,7 @@ export function parseSnapshot(text: string): Snapshot {
   } catch {
     const looksLikeJson = /^[[{"]/.test(trimmed);
     if (looksLikeJson && !/[}\]"]$/.test(trimmed)) {
-      throw new SnapshotError("The pasted result is cut off. Copy the whole cell again — it ends with }.", "truncated");
+      throw new SnapshotError("The pasted result is cut off. Copy the whole cell again. It ends with }.", "truncated");
     }
     throw new SnapshotError(
       looksLikeJson

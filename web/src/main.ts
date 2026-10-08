@@ -15,8 +15,8 @@ type Result = Extract<WorkerMessage, { type: "result" }>["result"];
 
 // The paid next step, set once the owner approves it: where "Get it fixed" leads, and the name of the
 // person who does the work. Until both are set, every fix-it-for-you offer stays hidden.
-const FIX_URL = "";
-const SELLER = "";
+const FIX_URL = "https://www.upwork.com/freelancers/~01d7446dbecad0fbf2";
+const SELLER = "Mark M.";
 const OFFERS_LIVE = Boolean(FIX_URL && SELLER);
 
 // Attack rows shown before "Show all".
@@ -86,6 +86,7 @@ function el<K extends keyof HTMLElementTagNameMap>(
 
 ui.faqFix.hidden = !OFFERS_LIVE;
 for (const name of document.querySelectorAll("[data-seller]")) name.textContent = SELLER;
+for (const link of document.querySelectorAll<HTMLAnchorElement>("a[data-fix-link]")) link.href = FIX_URL;
 
 // Step 1: the query
 
@@ -298,11 +299,12 @@ function renderResults(result: Result, projectName: string): void {
   ui.offer.hidden = !offer;
   ui.offerInline.hidden = !offer;
   if (offer) {
-    ui.offerTitle.textContent = fixable ? "Want it fixed and checked by a person?" : "Want a person to check the parts this couldn't test?";
+    ui.offerTitle.textContent = fixable ? "Want it fixed for you?" : "Want the untested parts checked too?";
     ui.offerText.textContent = fixable
-      ? `${SELLER} applies the fix to your project, tests your app's main features, and sends you the before-and-after proof. Fixed price, from $300.`
-      : `${SELLER} reviews the rules this check couldn't rebuild, fixes what's wrong, and sends you the before-and-after proof. Fixed price, from $300.`;
-    ui.offerInline.textContent = fixable ? "Have it applied for you" : "Have a person check the rest";
+      ? `${SELLER} applies the fix to your project, tests your app's main features, and sends you the before-and-after proof. Intro price from $150 for the first few clients, hired through Upwork.`
+      : `${SELLER} reviews the rules this check couldn't rebuild, fixes what's wrong, and sends you the before-and-after proof. Intro price from $150 for the first few clients, hired through Upwork.`;
+    ui.offerInline.textContent = fixable ? "Have it applied for you" : "Have the rest checked";
+    ui.offerInline.insertAdjacentHTML("beforeend", '<span class="sr-only"> (opens Upwork in a new tab)</span>');
     ui.offerLink.href = FIX_URL;
     ui.offerInline.href = FIX_URL;
   }
@@ -334,7 +336,7 @@ function verdictFor(result: Result, proven: ProofRow[], serious: number): [strin
         : "Copy the whole cell under snapshot again, then run the check.",
     ];
   }
-  const untested = partial ? " Some parts couldn't be tested — they're listed below." : "";
+  const untested = partial ? " Some parts couldn't be tested. They're listed below." : "";
   if (proven.length > 0) {
     const blocked = proven.filter((p) => p.after === false).length;
     const decisions = proven.filter((p) => p.after === true && !p.autoFixed).length;
@@ -342,7 +344,7 @@ function verdictFor(result: Result, proven: ProofRow[], serious: number): [strin
     // Every attack reaches data that may be public by design: say so instead of sounding an alarm.
     if (decisions === proven.length && serious === 0) {
       return [
-        `${plural(proven.length, "way")} in — maybe on purpose.`,
+        `${plural(proven.length, "way")} in, maybe on purpose.`,
         "These attacks reach data that may be meant to be public, like reviews or product listings. If it isn't, each finding below says how to lock it down." +
           untested,
       ];
@@ -357,7 +359,7 @@ function verdictFor(result: Result, proven: ProofRow[], serious: number): [strin
   if (serious > 0) {
     return [
       "No attacks got through, but there's work to do.",
-      "The findings below can cause damage without an attack — for example, a secret key stored in a database function." + untested,
+      "The findings below can cause damage without an attack, for example a secret key stored in a database function." + untested,
     ];
   }
   const tested = result.proof.filter((p) => p.before !== null).length;

@@ -8,7 +8,7 @@ import { countBySeverity } from "./report.js";
 import { renderSummary } from "./summary.js";
 import { SEVERITY_ORDER } from "./types.js";
 
-const HELP = `lockstamp — find and fix database security holes in Supabase apps, with proof.
+const HELP = `lockstamp: find and fix database security holes in Supabase apps, with proof.
 
 Usage: lockstamp [project-folder] [options]
 
@@ -88,7 +88,7 @@ async function main(): Promise<void> {
     console.log(`  attacks that worked: ${worked.length} before the fix, ${worked.filter((p) => p.after === true).length} after`);
   }
   if (result.fixIssues.length > 0) {
-    console.log(`  WARNING: ${plural(result.fixIssues.length, "statement")} in fix.sql failed to apply — review it before use`);
+    console.log(`  WARNING: ${plural(result.fixIssues.length, "statement")} in fix.sql failed to apply. Review it before use`);
   }
   console.log(`  report: ${join(outDir, "report.md")}`);
   if (failOn !== "never") {

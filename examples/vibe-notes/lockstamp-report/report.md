@@ -1,6 +1,6 @@
 # Database security check: vibe-notes
 
-Checked 2026-10-06 with Lockstamp · 4 tables · 11 findings
+Checked 2026-10-08 with Lockstamp · 4 tables · 11 findings
 
 ## Summary
 
@@ -43,15 +43,15 @@ We rebuilt your database setup in a private test copy, added two fake users, and
 
 ### 1. Critical: Row Level Security is off for app_settings
 
-**What this means:** Anyone who has your app's public key — it's visible in your website's code — can read, add, change and delete every row in "app_settings".
+**What this means:** Anyone who has your app's public key (it's visible in your website's code) can read, add, change and delete every row in "app_settings".
 
-**Fix:** Turn on Row Level Security. The fix allows read-only access for now — decide whether "app_settings" should be public at all. _(Included in fix.sql.)_
+**Fix:** Turn on Row Level Security. The fix allows read-only access for now. Decide whether "app_settings" should be public at all. _(Included in fix.sql.)_
 
 **Where:** `app_settings`
 
 ### 2. Critical: Row Level Security is off for profiles
 
-**What this means:** Anyone who has your app's public key — it's visible in your website's code — can read, add, change and delete every row in "profiles".
+**What this means:** Anyone who has your app's public key (it's visible in your website's code) can read, add, change and delete every row in "profiles".
 
 **Fix:** Turn on Row Level Security and add rules so each user can only reach their own rows (matched on id). _(Included in fix.sql.)_
 
@@ -59,7 +59,7 @@ We rebuilt your database setup in a private test copy, added two fake users, and
 
 ### 3. Critical: Row Level Security is off for subscriptions
 
-**What this means:** Anyone who has your app's public key — it's visible in your website's code — can read, add, change and delete every row in "subscriptions".
+**What this means:** Anyone who has your app's public key (it's visible in your website's code) can read, add, change and delete every row in "subscriptions".
 
 **Fix:** Turn on Row Level Security so each user can only read their own rows. Changes to "subscriptions" should come only from your server (for example a payment webhook or an admin function). _(Included in fix.sql.)_
 
@@ -87,7 +87,7 @@ We rebuilt your database setup in a private test copy, added two fake users, and
 
 **Fix:** Replace this rule with one that only matches rows where user_id is the current user. _(Included in fix.sql.)_
 
-**Where:** `notes — rule "Enable insert for authenticated users only"`
+**Where:** `notes, rule "Enable insert for authenticated users only"`
 
 ### 7. High: Rule "Enable read access for all users" on notes lets users read other users' rows
 
@@ -95,7 +95,7 @@ We rebuilt your database setup in a private test copy, added two fake users, and
 
 **Fix:** Replace this rule with one that only matches rows where user_id is the current user. _(Included in fix.sql.)_
 
-**Where:** `notes — rule "Enable read access for all users"`
+**Where:** `notes, rule "Enable read access for all users"`
 
 ### 8. High: Users can set their own role in profiles
 
@@ -131,7 +131,7 @@ We rebuilt your database setup in a private test copy, added two fake users, and
 
 ## What to do next
 
-1. Replace (rotate) every leaked key listed above in its provider's dashboard **today** — removing it from the code isn't enough, because old versions of your site still contain it.
+1. Replace (rotate) every leaked key listed above in its provider's dashboard **today**. Removing it from the code isn't enough, because old versions of your site still contain it.
 2. Read `fix.sql`, then apply it as a new migration or paste it into your SQL editor.
 3. Test your app's main features while logged in as a normal user.
 4. Run this check again to confirm everything shows as blocked.

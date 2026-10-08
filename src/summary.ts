@@ -28,7 +28,7 @@ export function renderSummary(r: SummaryInput): string {
     out.push(`### Lockstamp: ${plural(proven.length, "attack")} worked on a private copy of this database`, "");
     out.push(
       decisions === proven.length
-        ? `${proven.length === 1 ? "It reaches" : "They reach"} data that may be meant to be public — each needs a decision.`
+        ? `${proven.length === 1 ? "It reaches" : "They reach"} data that may be meant to be public. Each needs a decision.`
         : fixOutcome(proven.length, blocked),
     );
   } else if (partial) {

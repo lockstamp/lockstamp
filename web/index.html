@@ -3,7 +3,7 @@
   <head>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1" />
-    <title>Lockstamp — free security check for Supabase apps</title>
+    <title>Lockstamp: free security check for Supabase apps</title>
     <meta
       name="description"
       content="Check a Supabase app built with Lovable, Bolt or Replit for data leaks in about a minute. See which attacks work, tested on a private copy, plus the fix. Free, and nothing leaves your browser."
@@ -57,7 +57,7 @@
           <span class="badge-short">Supabase apps · Lovable, Bolt, Replit</span>
         </p>
         <h1 id="hero-title" class="reveal">Can a stranger read your&nbsp;users' data?</h1>
-        <p class="lede reveal">See which attacks on your database work, tested on a private copy, and get the fix — in about a minute.</p>
+        <p class="lede reveal">See which attacks on your database work, tested on a private copy, and get the fix, in about a minute.</p>
         <div class="hero-actions reveal">
           <a class="button accent" href="#check">Run the free check</a>
           <button type="button" class="button outline-light" data-demo>See a sample result</button>
@@ -149,7 +149,7 @@
         </li>
         <li class="reveal">
           <strong>0 bytes</strong>
-          <span>of your database sent anywhere — the check runs in this tab</span>
+          <span>of your database sent anywhere. The check runs in this tab</span>
           <small>Check it: the page makes no upload requests</small>
         </li>
       </ul>
@@ -157,7 +157,7 @@
       <section id="catches" class="catches" aria-labelledby="catches-title">
         <p class="kicker">What it catches</p>
         <h2 id="catches-title">The holes AI builders leave open</h2>
-        <p class="section-lede">These are the mistakes behind the real leaks. Every attack we report was actually tried on a private copy — not guessed from your settings.</p>
+        <p class="section-lede">These are the mistakes behind the real leaks. Every attack we report was actually tried on a private copy, not guessed from your settings.</p>
 
         <div class="bento">
           <article class="card wide reveal">
@@ -201,7 +201,7 @@
             <p class="card-kicker">Back doors</p>
             <h3>Views and functions that skip your rules</h3>
             <p>
-              A view or database function can run with full permissions and hand out data your rules protect — like a
+              A view or database function can run with full permissions and hand out data your rules protect, like a
               helper that returns every user's email to anyone who asks.
             </p>
           </article>
@@ -212,7 +212,7 @@
         <div class="check-intro">
           <p class="kicker">How it works</p>
           <h2 id="check-title">Check your app in about a minute</h2>
-          <p class="section-lede">You'll need your project's SQL editor — in the Supabase dashboard, or in Lovable under More → Cloud.</p>
+          <p class="section-lede">You'll need your project's SQL editor: in the Supabase dashboard, or in Lovable under More → Cloud.</p>
           <ul class="assurances">
             <li><strong>Read-only.</strong> The query reads your database's structure, never a row of your data.</li>
             <li><strong>Private.</strong> Everything runs in this browser tab. Nothing is uploaded or stored.</li>
@@ -252,7 +252,7 @@
 
           <li class="step">
             <h3><span class="step-label">Step 3</span> Get the proof and the fix</h3>
-            <p>You'll see which of our attacks worked on the private copy, which ones the fix blocks, and — when it can be fixed automatically — a fix file to run.</p>
+            <p>You'll see which of our attacks worked on the private copy, which ones the fix blocks, and (when it can be fixed automatically) a fix file to run.</p>
             <div class="row">
               <button type="button" class="button primary" id="run">Run the check</button>
               <button type="button" class="text-button" data-demo>Try it on a sample app</button>
@@ -276,7 +276,7 @@
           <div class="downloads" id="downloads">
             <a class="button primary" id="download-fix" download="fix.sql">Download fix.sql</a>
             <a class="button" id="download-report" download="lockstamp-report.md">Download the report</a>
-            <a class="text-button" id="offer-inline" href="#" hidden>Have us apply it for you</a>
+            <a class="text-button" id="offer-inline" href="#" target="_blank" rel="noopener" hidden>Have us apply it for you</a>
           </div>
 
           <div class="coverage" id="coverage" hidden>
@@ -302,10 +302,10 @@
         </div>
 
         <aside class="offer" id="offer" hidden>
-          <h3 id="offer-title">Want it fixed and checked by a person?</h3>
+          <h3 id="offer-title">Want it fixed for you?</h3>
           <p id="offer-text"></p>
-          <p class="offer-note">Built with an AI-powered engineering workflow on Claude Code, Anthropic's AI coding agent: it writes the code, a second AI reviewer checks every delivery, and automated tests must pass before anything reaches you.</p>
-          <a class="button accent" id="offer-link" href="#">Get it fixed</a>
+          <p class="offer-note">The work runs on an app build system where AI agents write the code, a separate AI reviewer checks every change, and automated tests must pass before anything reaches you.</p>
+          <a class="button accent" id="offer-link" href="#" target="_blank" rel="noopener">Get it fixed<span class="sr-only"> (opens Upwork in a new tab)</span></a>
         </aside>
       </section>
 
@@ -338,7 +338,7 @@
         <div class="faq-list">
           <details>
             <summary>Is the query safe to run on my database?</summary>
-            <p>Yes. It only reads your database's structure — tables, columns, access rules and functions. It doesn't read any rows, doesn't change anything, and doesn't need a password. You can read every line before you run it.</p>
+            <p>Yes. It only reads your database's structure: tables, columns, access rules and functions. It doesn't read any rows, doesn't change anything, and doesn't need a password. You can read every line before you run it.</p>
           </details>
           <details>
             <summary>Does my data get uploaded anywhere?</summary>
@@ -346,7 +346,7 @@
           </details>
           <details>
             <summary>Which apps does it work with?</summary>
-            <p>Any app that uses Supabase for its database — including apps built with Lovable (on Lovable Cloud or your own Supabase), Bolt, Replit, v0 and Cursor.</p>
+            <p>Any app that uses Supabase for its database, including apps built with Lovable (on Lovable Cloud or your own Supabase), Bolt, Replit, v0 and Cursor.</p>
           </details>
           <details>
             <summary>What do I do with fix.sql?</summary>
@@ -354,19 +354,20 @@
           </details>
           <details>
             <summary>Will the fix break my app?</summary>
-            <p>It changes who can see what, which is the point: a feature that showed other users' private data will stop doing that. Rules for data that might be meant to be public — like reviews or product listings — are left for you to decide.</p>
+            <p>It changes who can see what, which is the point: a feature that showed other users' private data will stop doing that. Rules for data that might be meant to be public (like reviews or product listings) are left for you to decide.</p>
           </details>
           <details id="faq-fix" hidden>
             <summary>I'm not technical. Can you fix it for me?</summary>
             <p>
               Yes. <span data-seller></span> applies the fix to your project, tests your main features, and sends you the before-and-after proof,
-              for a fixed price from $300. The work runs on an AI-powered engineering workflow built on Claude Code, Anthropic's AI coding agent:
-              it writes the code, a second AI reviewer checks every delivery, and automated tests must pass before anything reaches you.
+              at an intro price from $150 for the first few clients. You hire and pay through <a data-fix-link href="#" target="_blank" rel="noopener">Upwork<span class="sr-only"> (opens in a new tab)</span></a>, so your payment is protected.
+              The work runs on an app build system where AI agents write the code, a separate AI reviewer checks every change,
+              and automated tests must pass before anything reaches you.
             </p>
           </details>
           <details>
             <summary>What doesn't it check?</summary>
-            <p>It doesn't look at your app's code or website for leaked keys, test your live site, or check your login settings or payment flow — and no tool can guarantee an app has no other weaknesses.</p>
+            <p>It doesn't look at your app's code or website for leaked keys, test your live site, or check your login settings or payment flow, and no tool can guarantee an app has no other weaknesses.</p>
           </details>
         </div>
       </section>
@@ -381,9 +382,9 @@
     <footer class="footer">
       <p>Lockstamp</p>
       <p>
-        Sources: “16,000” —
+        Sources: “16,000”:
         <a href="https://techcrunch.com/2026/09/25/some-supabase-customers-are-publicly-exposing-reams-of-peoples-data-to-the-web/" rel="noopener">TechCrunch, 25 Sept 2026</a>,
-        reporting UpGuard's findings. “170 of 1,645” —
+        reporting UpGuard's findings. “170 of 1,645”:
         <a href="https://www.semafor.com/article/05/29/2025/the-hottest-new-vibe-coding-startup-lovable-is-a-sitting-duck-for-hackers" rel="noopener">Semafor, 29 May 2025</a>.
       </p>
       <p>Not affiliated with Supabase, Lovable, Bolt or Replit.</p>
