@@ -1,0 +1,375 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Supabase RLS not working? 10 common causes and fixes | Lockstamp</title>
+    <meta
+      name="description"
+      content="Supabase RLS returning empty results, blocking inserts, or letting everyone see everything? The common causes, how to spot each one, and the SQL to fix it."
+    />
+    <link rel="canonical" href="https://lockstamp.github.io/supabase-rls-not-working/" />
+
+    <meta property="og:type" content="article" />
+    <meta property="og:site_name" content="Lockstamp" />
+    <meta property="og:title" content="Supabase RLS not working? 10 common causes and fixes" />
+    <meta
+      property="og:description"
+      content="Empty results, blocked inserts, or everyone seeing everything: the common causes, how to spot each one, and the SQL to fix it."
+    />
+    <meta property="og:url" content="https://lockstamp.github.io/supabase-rls-not-working/" />
+    <meta property="og:image" content="https://lockstamp.github.io/og.png" />
+    <meta property="og:image:width" content="1200" />
+    <meta property="og:image:height" content="630" />
+    <meta property="og:image:alt" content="Lockstamp: free RLS check for Supabase apps, with a sample result" />
+    <meta name="twitter:card" content="summary_large_image" />
+    <meta name="twitter:title" content="Supabase RLS not working? 10 common causes and fixes" />
+    <meta
+      name="twitter:description"
+      content="Empty results, blocked inserts, or everyone seeing everything: the common causes, how to spot each one, and the SQL to fix it."
+    />
+    <meta name="twitter:image" content="https://lockstamp.github.io/og.png" />
+
+    <script type="application/ld+json">
+      {
+        "@context": "https://schema.org",
+        "@type": "FAQPage",
+        "mainEntity": [
+          {
+            "@type": "Question",
+            "name": "Why does my Supabase query return an empty array instead of an error?",
+            "acceptedAnswer": {
+              "@type": "Answer",
+              "text": "Because RLS filters rows rather than refusing the request. If no select policy matches, the query succeeds and returns no rows. Add a select policy for the role and rows you expect."
+            }
+          },
+          {
+            "@type": "Question",
+            "name": "Why can I see every row in the SQL editor even with RLS on?",
+            "acceptedAnswer": {
+              "@type": "Answer",
+              "text": "The SQL editor runs as the postgres role, which skips RLS. Test as a user instead: switch to the authenticated role and set the user's id, or log in to your app as a test user."
+            }
+          },
+          {
+            "@type": "Question",
+            "name": "How do I fix 'infinite recursion detected in policy'?",
+            "acceptedAnswer": {
+              "@type": "Answer",
+              "text": "A policy on a table is querying that same table, often to check whether the user is an admin. Move the check into a security definer function in a schema your API doesn't expose, and call that function from the policy."
+            }
+          },
+          {
+            "@type": "Question",
+            "name": "Should I just turn RLS off to make it work?",
+            "acceptedAnswer": {
+              "@type": "Answer",
+              "text": "No. With RLS off, anyone with your public key can read and change every row in that table. Find the missing or wrong policy instead."
+            }
+          }
+        ]
+      }
+    </script>
+    <link
+      rel="icon"
+      href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Crect width='32' height='32' rx='7' fill='%23F5C451'/%3E%3Cpath d='M9 16.5l4.5 4.5L23 11.5' stroke='%2313294B' stroke-width='3.5' fill='none' stroke-linecap='round' stroke-linejoin='round'/%3E%3C/svg%3E"
+    />
+  </head>
+  <body>
+    <a class="skip" href="#content">Skip to the guide</a>
+
+    <div class="dark">
+      <header class="nav">
+        <a class="brand" href="../" aria-label="Lockstamp home">
+          <span class="brand-mark" aria-hidden="true">✓</span>
+          <span>Lockstamp</span>
+        </a>
+        <nav class="nav-links" aria-label="Guides">
+          <a href="../supabase-rls-checker/">RLS checker</a>
+          <a href="../supabase-rls-not-working/" aria-current="page">RLS not working</a>
+          <a href="../is-my-lovable-app-secure/">Lovable apps</a>
+        </nav>
+        <a class="button accent small" href="../#check">Run the free check</a>
+      </header>
+
+      <section class="guide-hero" aria-labelledby="page-title">
+        <p class="badge">
+          <span class="badge-dot" aria-hidden="true"></span>
+          <span>Guide · Supabase Row Level Security</span>
+        </p>
+        <h1 id="page-title">Supabase RLS not working? Causes and fixes</h1>
+        <p class="lede">
+          RLS goes wrong in two directions: it blocks your own app, or it lets everyone in. Find your symptom below, see
+          why it happens, and copy the fix.
+        </p>
+        <div class="hero-actions">
+          <a class="button accent" href="#too-strict">My app sees nothing</a>
+          <a class="button outline-light" href="#too-loose">Everyone sees everything</a>
+        </div>
+        <p class="fud">Plain English · SQL you can copy · No signup</p>
+      </section>
+    </div>
+
+    <main id="content" class="guide">
+      <article class="prose">
+        <div class="answer">
+          <p class="kicker">Short answer</p>
+          <p>
+            Empty results with no error almost always mean a missing <code>select</code> policy, or a request sent without
+            the user's login. Seeing every row usually means you're testing in the SQL editor (which skips RLS), using the
+            <code>service_role</code> key, or a <code>using (true)</code> policy is letting everyone in. Don't fix it by
+            turning RLS off.
+          </p>
+        </div>
+
+        <nav class="toc" aria-label="On this page">
+          <p class="kicker">On this page</p>
+          <ol>
+            <li><a href="#too-strict">RLS blocks my own app (causes 1 to 5)</a></li>
+            <li><a href="#too-loose">RLS lets everyone in (causes 6 to 10)</a></li>
+            <li><a href="#debug">A quick way to debug any policy</a></li>
+          </ol>
+        </nav>
+
+        <h2 id="too-strict">RLS blocks my own app</h2>
+        <p>
+          RLS filters rows quietly. A query that isn't allowed to see anything doesn't fail; it just comes back empty.
+          That's why these bugs are confusing.
+        </p>
+
+        <section class="cause">
+          <p class="symptom">Symptom: empty list, no error</p>
+          <h3>1. RLS is on, but there's no select policy</h3>
+          <p>
+            With RLS on and no policy for reading, every <code>select</code> returns nothing. This happens a lot right
+            after an AI tool or the dashboard enables RLS without adding rules.
+          </p>
+          <pre><code>create policy "Owners read their rows" on public.notes
+  for select to authenticated using ((select auth.uid()) = user_id);</code></pre>
+        </section>
+
+        <section class="cause">
+          <p class="symptom">Symptom: "new row violates row-level security policy"</p>
+          <h3>2. Insert fails because the new row doesn't pass the check</h3>
+          <p>
+            An insert policy's <code>with check</code> must be true for the new row. If your app doesn't set
+            <code>user_id</code>, it's empty and the check fails. Let the database fill it in:
+          </p>
+          <pre><code>alter table public.notes alter column user_id set default auth.uid();
+
+create policy "Owners add their rows" on public.notes
+  for insert to authenticated with check ((select auth.uid()) = user_id);</code></pre>
+          <p>
+            Still failing on <code>.insert(...).select()</code>? Returning the new row also needs a <code>select</code>
+            policy that lets the user see it (cause 1).
+          </p>
+        </section>
+
+        <section class="cause">
+          <p class="symptom">Symptom: update or delete "works" but nothing changes</p>
+          <h3>3. The user can't see the row they're changing</h3>
+          <p>
+            An update or delete can only touch rows the user is allowed to see. With no <code>select</code> policy, or
+            no <code>update</code> policy whose <code>using</code> rule matches the row, it changes zero rows and still
+            reports success. Add the select policy from cause 1, then:
+          </p>
+          <pre><code>create policy "Owners edit their rows" on public.notes
+  for update to authenticated
+  using ((select auth.uid()) = user_id)
+  with check ((select auth.uid()) = user_id);</code></pre>
+        </section>
+
+        <section class="cause">
+          <p class="symptom">Symptom: works when logged in, empty on the server</p>
+          <h3>4. The request isn't carrying the user's login</h3>
+          <p>
+            <code>auth.uid()</code> comes from the user's login token. In server code, edge functions or API routes, a
+            Supabase client created with only the public key runs as a stranger, so <code>auth.uid()</code> is null and
+            owner-only rules match nothing. Pass the user's token through (for example the request's
+            <code>Authorization</code> header) when you create the client there. Don't swap in the
+            <code>service_role</code> key to make it work: that skips RLS for everyone.
+          </p>
+        </section>
+
+        <section class="cause">
+          <p class="symptom">Symptom: "infinite recursion detected in policy"</p>
+          <h3>5. A policy reads its own table</h3>
+          <p>
+            A common one: a policy on <code>profiles</code> checks whether the user is an admin by selecting from
+            <code>profiles</code>, which runs the policy again. Move the check into a function that runs with full rights,
+            kept in a schema your API doesn't expose:
+          </p>
+          <pre><code>create schema if not exists private;
+
+create or replace function private.is_admin()
+returns boolean
+language sql stable security definer set search_path = ''
+as $$
+  select exists (
+    select 1 from public.profiles
+    where id = (select auth.uid()) and role = 'admin'
+  );
+$$;
+
+grant usage on schema private to authenticated;
+grant execute on function private.is_admin() to authenticated;
+
+create policy "Admins read all profiles" on public.profiles
+  for select to authenticated using ((select private.is_admin()));</code></pre>
+        </section>
+
+        <div class="inline-cta">
+          <p>Not sure which rules are wrong? The free Lockstamp check tries the attacks on a private copy in your browser and shows which ones get through.</p>
+          <a class="button accent" href="../#check">Run the free check</a>
+        </div>
+
+        <h2 id="too-loose">RLS lets everyone in</h2>
+        <p>
+          This direction is the dangerous one, because nothing looks broken. Your app works, and so does anyone else's
+          request for your users' data.
+        </p>
+
+        <section class="cause loose">
+          <p class="symptom">Symptom: "I can see every row, RLS is ignored"</p>
+          <h3>6. You're testing in the SQL editor</h3>
+          <p>
+            The SQL editor runs as the <code>postgres</code> role, which skips RLS. Seeing everything there proves
+            nothing. Test as a real user instead. Newer Supabase dashboards have a role picker next to the
+            <strong>Run</strong> button: choose <strong>authenticated</strong> and a test user. Without it, run:
+          </p>
+          <pre><code>set role authenticated;
+select set_config('request.jwt.claims', '{"sub": "TEST-USER-UUID", "role": "authenticated"}', false);
+select * from public.notes;  -- should show only this user's rows</code></pre>
+          <p>Afterwards, run <code>reset role;</code> in the same SQL editor tab, or just reload the editor.</p>
+        </section>
+
+        <section class="cause loose">
+          <p class="symptom">Symptom: the app sees every user's data</p>
+          <h3>7. The app uses the service_role key</h3>
+          <p>
+            The <code>service_role</code> key (the secret key in newer projects) skips RLS completely. If it's in your
+            front-end code or a <code>VITE_</code> or <code>NEXT_PUBLIC_</code> environment variable, it's public. Swap it
+            for the public key in the browser, keep the secret key on the server only, and rotate it in your project's
+            API settings because it has already leaked.
+          </p>
+        </section>
+
+        <section class="cause loose">
+          <p class="symptom">Symptom: owner rule exists, but users still see each other's rows</p>
+          <h3>8. Another policy says <code>using (true)</code></h3>
+          <p>
+            Policies on the same table and action are combined with OR. One open rule beats any number of strict ones.
+            List the open rules, then drop the ones on private data:
+          </p>
+          <pre><code>select tablename, policyname, cmd, roles, qual, with_check
+from pg_policies
+where schemaname = 'public' and (qual = 'true' or with_check = 'true');
+
+drop policy "Enable read access for all users" on public.notes;</code></pre>
+        </section>
+
+        <section class="cause loose">
+          <p class="symptom">Symptom: the table is locked, but a view or function leaks it</p>
+          <h3>9. A view or full-rights function skips the rules</h3>
+          <p>
+            Views run with their creator's rights unless set to <code>security_invoker</code>. A
+            <code>security definer</code> function in <code>public</code> can be called by anyone through the API. Make
+            views follow the caller's rules, and stop strangers calling functions that return private rows:
+          </p>
+          <pre><code>alter view public.my_view set (security_invoker = true);
+
+revoke execute on function public.get_all_emails() from anon, authenticated, public;</code></pre>
+          <p>If logged-in users need that function, keep their access and change it so it only returns the caller's own rows (for example <code>where user_id = auth.uid()</code>).</p>
+        </section>
+
+        <section class="cause loose">
+          <p class="symptom">Symptom: a user made themselves an admin</p>
+          <h3>10. Users can update columns they shouldn't</h3>
+          <p>
+            RLS decides which rows a user can change, not which columns. An "edit your own profile" rule also lets them
+            set <code>role = 'admin'</code> or <code>plan = 'pro'</code>. Limit which columns they can write:
+          </p>
+          <pre><code>revoke update on public.profiles from authenticated;
+grant update (display_name, avatar_url) on public.profiles to authenticated;</code></pre>
+          <p>List every column your profile form saves, or those edits will start failing. If users create their own profile row, they could set <code>role</code> there too, so give it a default and limit the insert grant the same way. Or move roles and billing status to a table users can't write to at all.</p>
+        </section>
+
+        <h2 id="debug">A quick way to debug any policy</h2>
+        <ol>
+          <li>List the table's rules: <code>select * from pg_policies where tablename = 'notes';</code></li>
+          <li>Check RLS is on: <code>select relrowsecurity from pg_class where relname = 'notes';</code></li>
+          <li>Run the query as the user, with the role picker or the SQL from cause 6, not as <code>postgres</code>.</li>
+          <li>Check what the database thinks the user is: <code>select auth.uid();</code> while still set to that user.</li>
+          <li>Change one policy at a time, and test both the user who should get in and one who shouldn't.</li>
+        </ol>
+        <p>
+          The last step matters most. A fix that makes your app work again can also let the wrong person in, and you only
+          see that by testing as them. Our <a href="../supabase-rls-checker/">RLS checker guide</a> shows how to test as a
+          stranger and as a second user.
+        </p>
+      </article>
+
+      <aside class="aside" aria-label="Next steps">
+        <div class="aside-card night">
+          <h2>See which attacks get through</h2>
+          <p>Paste one query result. Lockstamp rebuilds your rules on a private copy in your browser, tries real attacks, and writes a fix file when it can.</p>
+          <a class="button accent" href="../#check">Run the free check</a>
+          <p class="small-print">No signup. Nothing is uploaded.</p>
+        </div>
+        <div class="aside-card">
+          <h2>Want it fixed for you?</h2>
+          <p>Mark M. finds the broken rules, fixes them, tests your main features and sends you the before-and-after proof. Intro price from $150, hired through Upwork.</p>
+          <a class="button" href="https://www.upwork.com/freelancers/~01d7446dbecad0fbf2" target="_blank" rel="noopener">Get it fixed<span class="sr-only"> (opens Upwork in a new tab)</span></a>
+        </div>
+        <nav class="related" aria-label="Related guides">
+          <p class="kicker">Related guides</p>
+          <a href="../supabase-rls-checker/">Supabase RLS checker: how to check your rules</a>
+          <a href="../is-my-lovable-app-secure/">Is my Lovable app secure? How to check</a>
+        </nav>
+      </aside>
+    </main>
+
+    <section class="faq split" aria-labelledby="faq-title">
+      <div>
+        <p class="kicker">FAQ</p>
+        <h2 id="faq-title">Questions about broken RLS</h2>
+      </div>
+      <div class="faq-list">
+        <details>
+          <summary>Why does my Supabase query return an empty array instead of an error?</summary>
+          <p>Because RLS filters rows rather than refusing the request. If no select policy matches, the query succeeds and returns no rows. Add a select policy for the role and rows you expect.</p>
+        </details>
+        <details>
+          <summary>Why can I see every row in the SQL editor even with RLS on?</summary>
+          <p>The SQL editor runs as the postgres role, which skips RLS. Test as a user instead: switch to the authenticated role and set the user's id, or log in to your app as a test user.</p>
+        </details>
+        <details>
+          <summary>How do I fix 'infinite recursion detected in policy'?</summary>
+          <p>A policy on a table is querying that same table, often to check whether the user is an admin. Move the check into a security definer function in a schema your API doesn't expose, and call that function from the policy.</p>
+        </details>
+        <details>
+          <summary>Should I just turn RLS off to make it work?</summary>
+          <p>No. With RLS off, anyone with your public key can read and change every row in that table. Find the missing or wrong policy instead.</p>
+        </details>
+      </div>
+    </section>
+
+    <section class="closing" aria-labelledby="closing-title">
+      <h2 id="closing-title">Fixed it? Make sure it holds.</h2>
+      <p>Free, about a minute, and nothing leaves your browser.</p>
+      <a class="button accent" href="../#check">Run the free check</a>
+    </section>
+
+    <footer class="footer">
+      <nav aria-label="Site">
+        <a href="../">Lockstamp free check</a>
+        <a href="../supabase-rls-checker/">Supabase RLS checker</a>
+        <a href="../supabase-rls-not-working/">Supabase RLS not working</a>
+        <a href="../is-my-lovable-app-secure/">Is my Lovable app secure?</a>
+      </nav>
+      <p>Not affiliated with Supabase or Lovable. Product names belong to their owners.</p>
+    </footer>
+
+    <script type="module" src="../src/guide.ts"></script>
+  </body>
+</html>

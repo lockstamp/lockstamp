@@ -1,0 +1,457 @@
+/* Guide pages: the home page's night header and workshop-gray body, set as a long read.
+   Shares tokens, buttons, FAQ, closing and footer styles with styles.css. */
+
+.guide-hero,
+.guide {
+  padding-inline: max(var(--gutter), calc((100% - var(--page)) / 2));
+}
+
+.guide-hero {
+  position: relative;
+  padding-top: clamp(2rem, 6vw, 4.5rem);
+  padding-bottom: clamp(2rem, 4vw, 3rem);
+  max-width: 100%;
+}
+
+.guide-hero .badge {
+  margin-bottom: 1.4rem;
+}
+
+.guide-hero h1 {
+  font-size: clamp(2.3rem, 5.2vw, 4.6rem);
+  font-weight: 790;
+  font-stretch: 116%;
+  letter-spacing: -0.02em;
+  line-height: 0.98;
+  max-width: 17ch;
+  color: #f2f6fd;
+}
+
+.guide-hero .lede {
+  max-width: 60ch;
+  text-wrap: pretty;
+}
+
+.guide-hero .hero-actions {
+  justify-content: flex-start;
+}
+
+.guide-hero .fud {
+  margin-top: 1rem;
+}
+
+.nav-links a[aria-current="page"] {
+  color: var(--on-night);
+  text-decoration: underline;
+  text-underline-offset: 0.35em;
+  text-decoration-color: var(--accent);
+}
+
+/* ---------- Article and its side card ---------- */
+
+.guide {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) 20rem;
+  gap: clamp(2rem, 5vw, 5rem);
+  align-items: start;
+  padding-top: clamp(1rem, 2vw, 1.5rem);
+  padding-bottom: clamp(4rem, 8vw, 6rem);
+}
+
+.prose {
+  max-width: 72ch;
+  min-width: 0;
+}
+
+.prose > * + * {
+  margin-top: 1.1rem;
+}
+
+.prose h2 {
+  margin-top: clamp(2.75rem, 5vw, 3.75rem);
+  padding-top: clamp(2.25rem, 4vw, 3rem);
+  border-top: 1px solid var(--rule);
+  font-size: clamp(1.7rem, 3vw, 2.4rem);
+  font-weight: 760;
+  font-stretch: 112%;
+  letter-spacing: -0.012em;
+  line-height: 1.08;
+  scroll-margin-top: 1.5rem;
+}
+
+.prose > h2:first-child {
+  margin-top: 0;
+  padding-top: 0;
+  border-top: 0;
+}
+
+.prose h3 {
+  margin-top: 2rem;
+  font-size: clamp(1.2rem, 1.8vw, 1.4rem);
+  font-weight: 700;
+  font-stretch: 106%;
+  line-height: 1.2;
+  scroll-margin-top: 1.5rem;
+}
+
+.prose p,
+.prose li {
+  color: #c3cad5;
+}
+
+.prose strong {
+  color: var(--ink);
+  font-weight: 650;
+}
+
+.prose a {
+  color: var(--ink);
+  text-decoration-color: var(--accent);
+  text-underline-offset: 0.2em;
+  text-decoration-thickness: 1.5px;
+}
+
+.prose a:hover {
+  color: #ffffff;
+}
+
+.prose ul,
+.prose ol {
+  padding-left: 1.3rem;
+  display: grid;
+  gap: 0.55rem;
+}
+
+.prose li::marker {
+  color: var(--ink-soft);
+}
+
+.prose :not(pre) > code {
+  padding: 0.1em 0.35em;
+  border: 1px solid var(--rule);
+  border-radius: 5px;
+  background: #0f1216;
+  color: #e3e9f2;
+  overflow-wrap: anywhere;
+}
+
+.prose pre {
+  margin-top: 1.1rem;
+  overflow-x: auto;
+  padding: 1rem 1.15rem;
+  border: 1px solid var(--rule);
+  border-radius: var(--radius);
+  background: #0f1216;
+  color: #d3dbe7;
+  font-size: 0.82rem;
+  line-height: 1.6;
+  tab-size: 2;
+}
+
+.prose pre code {
+  font-size: inherit;
+}
+
+.prose .label {
+  margin-top: 1.5rem;
+  font: 500 0.74rem var(--font-mono);
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--ink-soft);
+}
+
+.prose .label + pre {
+  margin-top: 0.5rem;
+}
+
+/* A short answer up top, for people who only read the first screen. */
+.answer {
+  padding: 1.25rem 1.4rem;
+  border: 1px solid var(--rule);
+  border-left: 3px solid var(--accent);
+  border-radius: var(--radius);
+  background: var(--sheet);
+}
+
+.answer p {
+  color: var(--ink);
+}
+
+.answer .kicker {
+  margin-bottom: 0.4rem;
+}
+
+/* Contents list */
+.toc {
+  padding: 1.1rem 1.3rem;
+  border: 1px solid var(--rule);
+  border-radius: var(--radius);
+}
+
+.toc .kicker {
+  margin-bottom: 0.6rem;
+}
+
+.toc ol {
+  margin: 0;
+  gap: 0.35rem;
+}
+
+.toc a {
+  text-decoration: none;
+}
+
+.toc a:hover {
+  text-decoration: underline;
+}
+
+/* A cause and its fix, as a pair */
+.cause {
+  margin-top: 1.5rem;
+  padding: clamp(1.1rem, 2.4vw, 1.5rem);
+  border: 1px solid var(--rule);
+  border-radius: var(--radius-lg);
+  background: var(--sheet);
+}
+
+.cause > * + * {
+  margin-top: 0.8rem;
+}
+
+.cause h3 {
+  margin-top: 0;
+}
+
+.cause .symptom {
+  font: 500 0.74rem/1.5 var(--font-mono);
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  color: var(--possible);
+}
+
+.cause.loose .symptom {
+  color: var(--decide);
+}
+
+.cause pre {
+  background: #111419;
+}
+
+/* Inline call to try the free check */
+.inline-cta {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: 1rem;
+  padding: 1.2rem 1.4rem;
+  border: 1px solid rgba(214, 228, 255, 0.16);
+  border-radius: var(--radius-lg);
+  background:
+    radial-gradient(120% 140% at 0% 0%, #12284f 0%, transparent 70%),
+    var(--night);
+}
+
+.inline-cta p {
+  color: var(--on-night);
+  max-width: 44ch;
+}
+
+.prose .inline-cta {
+  margin-top: 2rem;
+}
+
+/* The numbers from our own runs */
+.prose .stat {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 0;
+  margin-top: 1.5rem;
+  border: 1px solid var(--rule);
+  border-radius: var(--radius-lg);
+  background: var(--sheet);
+  list-style: none;
+  padding: 0;
+  margin-left: 0;
+}
+
+.stat li {
+  padding: 1.1rem 1.2rem;
+  display: grid;
+  gap: 0.35rem;
+  align-content: start;
+  color: var(--ink-soft);
+  font-size: 0.95rem;
+  line-height: 1.45;
+}
+
+.stat li + li {
+  border-left: 1px solid var(--rule);
+}
+
+.stat strong {
+  font: 790 clamp(1.6rem, 2.6vw, 2.1rem)/1 var(--font-display);
+  font-stretch: 112%;
+  color: var(--ink);
+  font-variant-numeric: tabular-nums;
+}
+
+.stat-note {
+  font-size: 0.88rem;
+}
+
+/* Side card: the two next steps, kept in view on wide screens */
+.aside {
+  position: sticky;
+  top: 1.5rem;
+  display: grid;
+  gap: 1rem;
+}
+
+.aside-card {
+  display: grid;
+  gap: 0.75rem;
+  padding: 1.4rem;
+  border: 1px solid var(--rule);
+  border-radius: var(--radius-lg);
+  background: var(--sheet);
+}
+
+.aside-card.night {
+  border-color: rgba(214, 228, 255, 0.16);
+  background:
+    radial-gradient(120% 90% at 50% 0%, #12284f 0%, transparent 70%),
+    var(--night);
+  color: var(--on-night);
+}
+
+.aside-card h2 {
+  font-size: 1.3rem;
+  font-weight: 720;
+  font-stretch: 108%;
+  line-height: 1.15;
+}
+
+.aside-card p {
+  font-size: 0.95rem;
+  color: var(--ink-soft);
+}
+
+.aside-card.night p {
+  color: var(--on-night-soft);
+}
+
+.aside-card .button {
+  width: 100%;
+}
+
+.aside-card .small-print {
+  font: 400 0.76rem/1.5 var(--font-mono);
+}
+
+/* Related guides */
+.related {
+  display: grid;
+  gap: 0.5rem;
+  padding: 1.2rem 1.4rem;
+  border: 1px solid var(--rule);
+  border-radius: var(--radius-lg);
+}
+
+.related a {
+  font-weight: 600;
+  text-underline-offset: 0.2em;
+  text-decoration-color: var(--accent);
+}
+
+.guide-faq {
+  padding-inline: max(var(--gutter), calc((100% - var(--page)) / 2));
+}
+
+@media (max-width: 1080px) {
+  .guide {
+    grid-template-columns: 1fr;
+  }
+
+  .aside {
+    position: static;
+    max-width: 72ch;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+
+  .related {
+    grid-column: 1 / -1;
+  }
+}
+
+@media (max-width: 720px) {
+  .aside {
+    grid-template-columns: 1fr;
+  }
+
+  .stat {
+    grid-template-columns: 1fr;
+  }
+
+  .stat li + li {
+    border-left: 0;
+    border-top: 1px solid var(--rule);
+  }
+}
+
+@media (max-width: 640px) {
+  .guide-hero .hero-actions {
+    flex-direction: column;
+    align-self: stretch;
+  }
+
+  .guide-hero .hero-actions .button {
+    width: 100%;
+  }
+
+  .nav .button.small {
+    display: inline-flex;
+  }
+
+  .inline-cta .button {
+    width: 100%;
+  }
+
+  .prose pre {
+    font-size: 0.76rem;
+    padding: 0.85rem 0.9rem;
+  }
+}
+
+/* Copy button on code blocks */
+.code-wrap {
+  position: relative;
+  margin-top: 1.1rem;
+}
+
+.prose .label + .code-wrap {
+  margin-top: 0.5rem;
+}
+
+.code-wrap pre {
+  margin-top: 0;
+  padding-right: 4.75rem;
+}
+
+.copy-code {
+  position: absolute;
+  top: 0.5rem;
+  right: 0.5rem;
+  padding: 0.3rem 0.65rem;
+  border: 1px solid var(--rule);
+  border-radius: 6px;
+  background: var(--sheet-raised);
+  color: var(--ink);
+  font: 500 0.75rem var(--font-mono);
+  cursor: pointer;
+}
+
+.copy-code:hover {
+  border-color: #3b4350;
+  background: #2b313b;
+}

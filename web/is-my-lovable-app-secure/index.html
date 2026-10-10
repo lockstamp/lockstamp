@@ -1,0 +1,357 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Is my Lovable app secure? How to check it yourself | Lockstamp</title>
+    <meta
+      name="description"
+      content="Lovable apps keep their data in a Supabase database, and its access rules decide who can read it. Seven checks you can do yourself, what to ask Lovable to fix, and a free in-browser check."
+    />
+    <link rel="canonical" href="https://lockstamp.github.io/is-my-lovable-app-secure/" />
+
+    <meta property="og:type" content="article" />
+    <meta property="og:site_name" content="Lockstamp" />
+    <meta property="og:title" content="Is my Lovable app secure? How to check it yourself" />
+    <meta
+      property="og:description"
+      content="Seven checks you can do yourself, what to ask Lovable to fix, and a free in-browser check of your database rules."
+    />
+    <meta property="og:url" content="https://lockstamp.github.io/is-my-lovable-app-secure/" />
+    <meta property="og:image" content="https://lockstamp.github.io/og.png" />
+    <meta property="og:image:width" content="1200" />
+    <meta property="og:image:height" content="630" />
+    <meta property="og:image:alt" content="Lockstamp: free RLS check for Supabase apps, with a sample result" />
+    <meta name="twitter:card" content="summary_large_image" />
+    <meta name="twitter:title" content="Is my Lovable app secure? How to check it yourself" />
+    <meta
+      name="twitter:description"
+      content="Seven checks you can do yourself, what to ask Lovable to fix, and a free in-browser check of your database rules."
+    />
+    <meta name="twitter:image" content="https://lockstamp.github.io/og.png" />
+
+    <script type="application/ld+json">
+      {
+        "@context": "https://schema.org",
+        "@type": "FAQPage",
+        "mainEntity": [
+          {
+            "@type": "Question",
+            "name": "Doesn't Lovable's own security scan cover this?",
+            "acceptedAnswer": {
+              "@type": "Answer",
+              "text": "Run it, it's free and it catches a lot. Like Supabase's Security Advisor, it mostly reviews your settings and code. Lockstamp is a second opinion that actually tries the attacks on a private copy of your database, as a stranger and as a second user."
+            }
+          },
+          {
+            "@type": "Question",
+            "name": "Is it a problem that my Supabase key is visible in my site's code?",
+            "acceptedAnswer": {
+              "@type": "Answer",
+              "text": "Not for the public key (anon or publishable). It's meant to be public, and your database rules are what protect the data. It is a problem if the service_role or secret key is visible: that key skips every rule, so rotate it straight away."
+            }
+          },
+          {
+            "@type": "Question",
+            "name": "Can anyone tell me my app is 100% secure?",
+            "acceptedAnswer": {
+              "@type": "Answer",
+              "text": "No, and be wary of anyone who says so. What you can get is evidence about specific risks: these attacks were tried, these got through before the fix, and these are blocked after it."
+            }
+          },
+          {
+            "@type": "Question",
+            "name": "I'm not technical. Can someone fix it for me?",
+            "acceptedAnswer": {
+              "@type": "Answer",
+              "text": "Yes. Mark M. applies the fix to your project, tests your main features and sends you the before-and-after proof, at an intro price from $150 for the first few clients. You hire and pay through Upwork."
+            }
+          }
+        ]
+      }
+    </script>
+    <link
+      rel="icon"
+      href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Crect width='32' height='32' rx='7' fill='%23F5C451'/%3E%3Cpath d='M9 16.5l4.5 4.5L23 11.5' stroke='%2313294B' stroke-width='3.5' fill='none' stroke-linecap='round' stroke-linejoin='round'/%3E%3C/svg%3E"
+    />
+  </head>
+  <body>
+    <a class="skip" href="#content">Skip to the guide</a>
+
+    <div class="dark">
+      <header class="nav">
+        <a class="brand" href="../" aria-label="Lockstamp home">
+          <span class="brand-mark" aria-hidden="true">✓</span>
+          <span>Lockstamp</span>
+        </a>
+        <nav class="nav-links" aria-label="Guides">
+          <a href="../supabase-rls-checker/">RLS checker</a>
+          <a href="../supabase-rls-not-working/">RLS not working</a>
+          <a href="../is-my-lovable-app-secure/" aria-current="page">Lovable apps</a>
+        </nav>
+        <a class="button accent small" href="../#check">Run the free check</a>
+      </header>
+
+      <section class="guide-hero" aria-labelledby="page-title">
+        <p class="badge">
+          <span class="badge-dot" aria-hidden="true"></span>
+          <span>Guide · Apps built with Lovable</span>
+        </p>
+        <h1 id="page-title">Is my Lovable app secure? How to check it yourself</h1>
+        <p class="lede">
+          Lovable builds the app fast. Whether strangers can read your users' data comes down to a few database rules
+          the AI wrote for you. Here's how to see what they actually allow.
+        </p>
+        <div class="hero-actions">
+          <a class="button accent" href="../#check">Run the free check</a>
+          <a class="button outline-light" href="#checks">See the 7 checks</a>
+        </div>
+        <p class="fud">Free · No signup · The check runs in your browser</p>
+      </section>
+    </div>
+
+    <main id="content" class="guide">
+      <article class="prose">
+        <div class="answer">
+          <p class="kicker">Short answer</p>
+          <p>
+            Nobody can honestly promise an app is secure, but you can find out whether the common holes are open. For a
+            Lovable app, the big one is the database: if its Row Level Security rules are missing or too loose, anyone
+            can read your users' data with the public key that ships in your site's code. Run Lovable's security scan,
+            then test the rules as a stranger and as another user.
+          </p>
+        </div>
+
+        <nav class="toc" aria-label="On this page">
+          <p class="kicker">On this page</p>
+          <ol>
+            <li><a href="#where-data-lives">Where your app's data lives</a></li>
+            <li><a href="#what-we-saw">What we saw in real Lovable projects</a></li>
+            <li><a href="#checks">7 checks you can do yourself</a></li>
+            <li><a href="#fix">How to get it fixed</a></li>
+          </ol>
+        </nav>
+
+        <h2 id="where-data-lives">Where your app's data lives</h2>
+        <p>
+          A Lovable app's data sits in a Supabase database (Postgres), either through Lovable Cloud or a Supabase project
+          you connected. Your website talks to that database directly from the visitor's browser, using a public key
+          that's built into your site's JavaScript. Anyone can find it, and that's normal.
+        </p>
+        <p>
+          What stops a stranger from using that key to download your users table is <strong>Row Level Security</strong>
+          (RLS): rules on each table that say who can read and change which rows. The AI writes those rules as it builds
+          features. Most are fine. The ones that aren't tend to look harmless, like a rule that says "logged-in users can
+          read profiles" when it should say "users can read their own profile".
+        </p>
+        <p>
+          This isn't a theoretical worry. In May 2025, Semafor reported that
+          <a href="https://www.semafor.com/article/05/29/2025/the-hottest-new-vibe-coding-startup-lovable-is-a-sitting-duck-for-hackers" rel="noopener">170 of 1,645 Lovable apps checked</a>
+          let anyone read their users' data, and in September 2026 TechCrunch reported UpGuard finding
+          <a href="https://techcrunch.com/2026/09/25/some-supabase-customers-are-publicly-exposing-reams-of-peoples-data-to-the-web/" rel="noopener">16,000 Supabase databases exposing personal data</a>.
+        </p>
+
+        <h2 id="what-we-saw">What we saw in real Lovable projects</h2>
+        <p>
+          We ran Lockstamp offline on public GitHub projects built with Lovable and Supabase, rebuilding each database
+          from its public migration files. No live sites were touched and individual results aren't published.
+        </p>
+        <ul class="stat" aria-label="Results in rebuilds from public migration files">
+          <li><strong>14 of 27</strong>projects had at least one attack that worked</li>
+          <li><strong>12</strong>serious holes after a closer review, all in 1 project</li>
+          <li><strong>92</strong>results left for a human decision</li>
+        </ul>
+        <p class="stat-note">
+          All numbers are in rebuilds from public migration files, not live apps. The "human decision" results are mostly
+          data that may be meant to be public, like listings or reviews, or rules too complex to change safely without
+          knowing the app. That's the honest picture: serious holes are real but not everywhere, and most findings need
+          someone who knows the app to make the call.
+        </p>
+
+        <h2 id="checks">7 checks you can do yourself</h2>
+
+        <h3>1. Run Lovable's security scan, and read it</h3>
+        <p>
+          Lovable has a built-in security scan. Run it before you publish and read each warning rather than clicking past
+          it. If your project uses its own Supabase project, also open <strong>Security Advisor</strong> in the Supabase
+          dashboard. Both are free. Both mostly review your settings; they don't try the attacks.
+        </p>
+
+        <h3>2. Make sure every table has RLS on</h3>
+        <p>
+          Open your SQL editor (on Lovable Cloud: <strong>More</strong>, then <strong>Cloud</strong>, then
+          <strong>SQL editor</strong>) and run this. Any table showing <code>false</code> is open to anyone.
+        </p>
+        <pre><code>select c.relname as table_name, c.relrowsecurity as rls_on
+from pg_class c
+join pg_namespace n on n.oid = c.relnamespace
+where n.nspname = 'public' and c.relkind in ('r', 'p')
+order by rls_on, table_name;</code></pre>
+
+        <h3>3. Look for rules that let everyone in</h3>
+        <p>
+          A rule whose condition is just <code>true</code> lets every request through. That's fine for a public product
+          list. It's a leak on profiles, messages, orders or anything personal.
+        </p>
+        <pre><code>select tablename, policyname, cmd, roles, qual, with_check
+from pg_policies
+where schemaname = 'public' and (qual = 'true' or with_check = 'true');</code></pre>
+
+        <h3>4. Check users can't promote themselves</h3>
+        <p>
+          If your <code>profiles</code> table has a <code>role</code>, <code>is_admin</code>, <code>credits</code> or
+          <code>plan</code> column, and users can edit their own profile, they can usually change those too. RLS controls
+          rows, not columns. Ask whether a normal user could run
+          <code>update profiles set role = 'admin'</code> on their own row. If yes, that needs fixing (see below).
+        </p>
+
+        <h3>5. Search your code for secret keys</h3>
+        <p>
+          In your project's code (in Lovable's code view or on GitHub), search for <code>service_role</code>,
+          <code>sk_live</code>, <code>sk-</code> and <code>secret</code>. Anything in front-end files or in variables
+          starting with <code>VITE_</code> ends up in the browser. The Supabase public key is fine there; a
+          <code>service_role</code> key, a Stripe secret key or an AI provider key is not. If you find one, rotate it in
+          that provider's dashboard and move the call into a server function.
+        </p>
+
+        <h3>6. Open your app as a stranger</h3>
+        <p>
+          Open your site in a private window without logging in. Open the browser's developer tools, go to the
+          <strong>Network</strong> tab, and use the app. Look at requests to <code>/rest/v1/</code>. If any return other
+          people's names, emails or messages while you're logged out, anyone on the internet can see them too.
+        </p>
+
+        <h3>7. Open it as a second user</h3>
+        <p>
+          Sign up two test accounts. Create something private with the first (a note, an order, a message), then log in
+          as the second and look for it, including in the Network tab. This catches a common leak in AI-built
+          apps: rules that check "is logged in" instead of "owns this row".
+        </p>
+
+        <div class="inline-cta">
+          <p>Checks 2, 3, 4, 6 and 7 are what the free Lockstamp check automates: real attacks as a stranger and as a second user, on a private copy in your browser.</p>
+          <a class="button accent" href="../#check">Run the free check</a>
+        </div>
+
+        <h2 id="fix">How to get it fixed</h2>
+        <h3>Ask Lovable to fix it</h3>
+        <p>You can paste a prompt like this into Lovable, adjusted for your tables:</p>
+        <pre><code>Review the Row Level Security on every table. Users should only be able to
+read, update and delete their own rows (matched on user_id = auth.uid()).
+Remove any policy that uses "true" on tables with personal data.
+Users must not be able to change role, is_admin, plan or credits columns.
+Show me the SQL migration before applying it.</code></pre>
+        <p>
+          Then check the result. AI fixes can go too far (your app stops showing data) or not far enough (an open rule is
+          left behind). Re-run checks 6 and 7, or the free check, after every change.
+        </p>
+
+        <h3>Or fix it with SQL</h3>
+        <p>
+          Policies add up: if any rule lets everyone in, owner-only rules don't help, so drop the open ones first (list
+          them with the query from check 3). For a table like <code>notes</code> with a <code>user_id</code> column:
+        </p>
+        <pre><code>alter table public.notes enable row level security;
+
+-- Drop each open rule the check 3 query listed, for example:
+drop policy if exists "Enable read access for all users" on public.notes;
+
+create policy "Owners read their notes" on public.notes
+  for select to authenticated using ((select auth.uid()) = user_id);
+
+create policy "Owners add their notes" on public.notes
+  for insert to authenticated with check ((select auth.uid()) = user_id);
+
+create policy "Owners edit their notes" on public.notes
+  for update to authenticated
+  using ((select auth.uid()) = user_id)
+  with check ((select auth.uid()) = user_id);
+
+create policy "Owners delete their notes" on public.notes
+  for delete to authenticated using ((select auth.uid()) = user_id);</code></pre>
+        <p class="label">Stop users editing their own role</p>
+        <pre><code>revoke update on public.profiles from authenticated;
+grant update (display_name, avatar_url) on public.profiles to authenticated;</code></pre>
+        <p>List every column your profile form saves, or those edits will start failing. If users create their own profile row, they could set <code>role</code> there too, so give it a default and limit the insert grant the same way.</p>
+        <p>
+          If your app breaks after a change, the <a href="../supabase-rls-not-working/">RLS not working guide</a> covers
+          the usual causes. For the full set of checks, see the <a href="../supabase-rls-checker/">RLS checker guide</a>.
+        </p>
+
+        <h3>Or have it done for you</h3>
+        <p>
+          If you'd rather not touch SQL, Mark M. applies the fix to your project, tests your main features and sends you
+          the before-and-after proof. Intro price from $150 for the first few clients, hired and paid through
+          <a href="https://www.upwork.com/freelancers/~01d7446dbecad0fbf2" target="_blank" rel="noopener">Upwork<span class="sr-only"> (opens in a new tab)</span></a>.
+          It covers the database rules that were checked; no fix is a guarantee that no other weaknesses exist.
+        </p>
+      </article>
+
+      <aside class="aside" aria-label="Next steps">
+        <div class="aside-card night">
+          <h2>Check your Lovable app free</h2>
+          <p>Paste one query result from your SQL editor. Lockstamp tries real attacks on a private copy in your browser and writes a fix file when it can.</p>
+          <a class="button accent" href="../#check">Run the free check</a>
+          <p class="small-print">No signup. Nothing is uploaded.</p>
+        </div>
+        <div class="aside-card">
+          <h2>Want it fixed for you?</h2>
+          <p>Mark M. applies the fix, tests your main features and sends you the before-and-after proof. Intro price from $150, hired through Upwork.</p>
+          <a class="button" href="https://www.upwork.com/freelancers/~01d7446dbecad0fbf2" target="_blank" rel="noopener">Get it fixed<span class="sr-only"> (opens Upwork in a new tab)</span></a>
+        </div>
+        <nav class="related" aria-label="Related guides">
+          <p class="kicker">Related guides</p>
+          <a href="../supabase-rls-checker/">Supabase RLS checker: how to check your rules</a>
+          <a href="../supabase-rls-not-working/">Supabase RLS not working? Causes and fixes</a>
+        </nav>
+      </aside>
+    </main>
+
+    <section class="faq split" aria-labelledby="faq-title">
+      <div>
+        <p class="kicker">FAQ</p>
+        <h2 id="faq-title">Questions Lovable builders ask</h2>
+      </div>
+      <div class="faq-list">
+        <details>
+          <summary>Doesn't Lovable's own security scan cover this?</summary>
+          <p>Run it, it's free and it catches a lot. Like Supabase's Security Advisor, it mostly reviews your settings and code. Lockstamp is a second opinion that actually tries the attacks on a private copy of your database, as a stranger and as a second user.</p>
+        </details>
+        <details>
+          <summary>Is it a problem that my Supabase key is visible in my site's code?</summary>
+          <p>Not for the public key (anon or publishable). It's meant to be public, and your database rules are what protect the data. It is a problem if the service_role or secret key is visible: that key skips every rule, so rotate it straight away.</p>
+        </details>
+        <details>
+          <summary>Can anyone tell me my app is 100% secure?</summary>
+          <p>No, and be wary of anyone who says so. What you can get is evidence about specific risks: these attacks were tried, these got through before the fix, and these are blocked after it.</p>
+        </details>
+        <details>
+          <summary>I'm not technical. Can someone fix it for me?</summary>
+          <p>Yes. Mark M. applies the fix to your project, tests your main features and sends you the before-and-after proof, at an intro price from $150 for the first few clients. You hire and pay through <a href="https://www.upwork.com/freelancers/~01d7446dbecad0fbf2" target="_blank" rel="noopener">Upwork<span class="sr-only"> (opens in a new tab)</span></a>.</p>
+        </details>
+      </div>
+    </section>
+
+    <section class="closing" aria-labelledby="closing-title">
+      <h2 id="closing-title">Find out before someone else does.</h2>
+      <p>Free, about a minute, and nothing leaves your browser.</p>
+      <a class="button accent" href="../#check">Run the free check</a>
+    </section>
+
+    <footer class="footer">
+      <nav aria-label="Site">
+        <a href="../">Lockstamp free check</a>
+        <a href="../supabase-rls-checker/">Supabase RLS checker</a>
+        <a href="../supabase-rls-not-working/">Supabase RLS not working</a>
+        <a href="../is-my-lovable-app-secure/">Is my Lovable app secure?</a>
+      </nav>
+      <p>
+        Sources: <a href="https://www.semafor.com/article/05/29/2025/the-hottest-new-vibe-coding-startup-lovable-is-a-sitting-duck-for-hackers" rel="noopener">Semafor, 29 May 2025</a>;
+        <a href="https://techcrunch.com/2026/09/25/some-supabase-customers-are-publicly-exposing-reams-of-peoples-data-to-the-web/" rel="noopener">TechCrunch, 25 Sept 2026</a>, reporting UpGuard's findings.
+      </p>
+      <p>Not affiliated with Supabase or Lovable. Product names belong to their owners.</p>
+    </footer>
+
+    <script type="module" src="../src/guide.ts"></script>
+  </body>
+</html>

@@ -1843,6 +1843,12 @@ textarea[aria-invalid="true"] {
   text-underline-offset: 0.2em;
 }
 
+.footer nav {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.4rem 1.4rem;
+}
+
 /* ---------- Large screens ---------- */
 
 @media (min-width: 1600px) {

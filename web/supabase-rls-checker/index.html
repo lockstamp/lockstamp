@@ -1,0 +1,371 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Supabase RLS checker: how to check your Row Level Security | Lockstamp</title>
+    <meta
+      name="description"
+      content="How to check Supabase Row Level Security yourself: the SQL queries that find tables with RLS off, always-true rules, open views and functions, plus a free in-browser checker."
+    />
+    <link rel="canonical" href="https://lockstamp.github.io/supabase-rls-checker/" />
+
+    <meta property="og:type" content="article" />
+    <meta property="og:site_name" content="Lockstamp" />
+    <meta property="og:title" content="Free Supabase RLS checker, and how to check by hand" />
+    <meta
+      property="og:description"
+      content="The SQL queries that find tables with RLS off, always-true rules, open views and functions, plus a free in-browser checker."
+    />
+    <meta property="og:url" content="https://lockstamp.github.io/supabase-rls-checker/" />
+    <meta property="og:image" content="https://lockstamp.github.io/og.png" />
+    <meta property="og:image:width" content="1200" />
+    <meta property="og:image:height" content="630" />
+    <meta property="og:image:alt" content="Lockstamp: free RLS check for Supabase apps, with a sample result" />
+    <meta name="twitter:card" content="summary_large_image" />
+    <meta name="twitter:title" content="Free Supabase RLS checker, and how to check by hand" />
+    <meta
+      name="twitter:description"
+      content="The SQL queries that find tables with RLS off, always-true rules, open views and functions, plus a free in-browser checker."
+    />
+    <meta name="twitter:image" content="https://lockstamp.github.io/og.png" />
+
+    <script type="application/ld+json">
+      {
+        "@context": "https://schema.org",
+        "@type": "FAQPage",
+        "mainEntity": [
+          {
+            "@type": "Question",
+            "name": "Isn't Supabase's Security Advisor enough?",
+            "acceptedAnswer": {
+              "@type": "Answer",
+              "text": "It's a good first step and it's free. It reviews your settings and flags known patterns, like a table with RLS off. It doesn't try requests as a stranger or as another user, so a rule that is switched on but too loose can still pass. Use both."
+            }
+          },
+          {
+            "@type": "Question",
+            "name": "Will turning on RLS break my app?",
+            "acceptedAnswer": {
+              "@type": "Answer",
+              "text": "It can, for a moment. With RLS on and no rules, the table returns nothing, so pages that read it go empty until you add the policies. Add the enable statement and the policies together, then click through your app while logged in as a normal user."
+            }
+          },
+          {
+            "@type": "Question",
+            "name": "Does the service_role key respect RLS?",
+            "acceptedAnswer": {
+              "@type": "Answer",
+              "text": "No. The service_role key (called the secret key in newer projects) skips RLS completely. That's why it must only ever live on a server, never in your website's code. If it's in your front end, treat it as leaked and rotate it."
+            }
+          },
+          {
+            "@type": "Question",
+            "name": "Is the Lockstamp check really free?",
+            "acceptedAnswer": {
+              "@type": "Answer",
+              "text": "Yes. There's no signup, and it runs in your browser tab. The paid part is optional: if you'd rather not apply the fix yourself, you can hire Mark M. through Upwork to do it."
+            }
+          }
+        ]
+      }
+    </script>
+    <link
+      rel="icon"
+      href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Crect width='32' height='32' rx='7' fill='%23F5C451'/%3E%3Cpath d='M9 16.5l4.5 4.5L23 11.5' stroke='%2313294B' stroke-width='3.5' fill='none' stroke-linecap='round' stroke-linejoin='round'/%3E%3C/svg%3E"
+    />
+  </head>
+  <body>
+    <a class="skip" href="#content">Skip to the guide</a>
+
+    <div class="dark">
+      <header class="nav">
+        <a class="brand" href="../" aria-label="Lockstamp home">
+          <span class="brand-mark" aria-hidden="true">✓</span>
+          <span>Lockstamp</span>
+        </a>
+        <nav class="nav-links" aria-label="Guides">
+          <a href="../supabase-rls-checker/" aria-current="page">RLS checker</a>
+          <a href="../supabase-rls-not-working/">RLS not working</a>
+          <a href="../is-my-lovable-app-secure/">Lovable apps</a>
+        </nav>
+        <a class="button accent small" href="../#check">Run the free check</a>
+      </header>
+
+      <section class="guide-hero" aria-labelledby="page-title">
+        <p class="badge">
+          <span class="badge-dot" aria-hidden="true"></span>
+          <span>Guide · Supabase Row Level Security</span>
+        </p>
+        <h1 id="page-title">Free Supabase RLS checker, and how to check by hand</h1>
+        <p class="lede">
+          "RLS enabled" doesn't mean your data is private. Here's how to check what a stranger and another logged-in user
+          can actually do, with the SQL to find the usual mistakes and to fix them.
+        </p>
+        <div class="hero-actions">
+          <a class="button accent" href="../#check">Run the free check</a>
+          <a class="button outline-light" href="#how-to-check">Check it by hand</a>
+        </div>
+        <p class="fud">Free · No signup · The check runs in your browser</p>
+      </section>
+    </div>
+
+    <main id="content" class="guide">
+      <article class="prose">
+        <div class="answer">
+          <p class="kicker">Short answer</p>
+          <p>
+            Check four things: every table in the <code>public</code> schema has RLS turned on, no rule on private data
+            says <code>using (true)</code>, no view or database function hands out rows your rules protect, and users
+            can't edit columns like <code>role</code> or <code>plan</code>. Then test it the way an attacker would: as a
+            stranger with your public key, and as a second user.
+          </p>
+        </div>
+
+        <nav class="toc" aria-label="On this page">
+          <p class="kicker">On this page</p>
+          <ol>
+            <li><a href="#what-rls-does">What RLS does</a></li>
+            <li><a href="#enabled-is-not-enough">Why "RLS enabled" isn't enough</a></li>
+            <li><a href="#how-to-check">How to check, step by step</a></li>
+            <li><a href="#fix">How to fix what you find</a></li>
+            <li><a href="#limits">What no checker can tell you</a></li>
+          </ol>
+        </nav>
+
+        <h2 id="what-rls-does">What RLS does</h2>
+        <p>
+          A Supabase app's website talks straight to the database through Supabase's API. To do that, it ships a public
+          key (the <strong>anon</strong> key, called the <strong>publishable</strong> key in newer projects) inside your
+          site's JavaScript. Anyone can open the browser's developer tools and copy it. That's by design: the key is
+          meant to be public.
+        </p>
+        <p>
+          What keeps your data private is <strong>Row Level Security</strong> (RLS), a Postgres feature. When RLS is on
+          for a table, every request is filtered through rules called <strong>policies</strong>. A policy says, for
+          example, "a logged-in user can read a note only if <code>user_id</code> is their own id". When RLS is off, the
+          public key can read, change and delete every row.
+        </p>
+
+        <h2 id="enabled-is-not-enough">Why "RLS enabled" isn't enough</h2>
+        <p>
+          Apps built with AI tools like Lovable, Bolt or Replit usually do switch RLS on. The holes tend to be one step
+          further in:
+        </p>
+        <ul>
+          <li>
+            <strong>Rules that let everyone in.</strong> A policy with <code>using (true)</code> passes every request. AI
+            tools often write one to make an error go away.
+          </li>
+          <li>
+            <strong>Rules for "logged in", not "the owner".</strong> A policy for the <code>authenticated</code> role with
+            <code>using (true)</code> lets any user who signs up read every other user's rows. Sign-up is usually open
+            to anyone.
+          </li>
+          <li>
+            <strong>Columns a user shouldn't touch.</strong> RLS works on whole rows. If users may update their own
+            profile row, they can also change its <code>role</code>, <code>is_admin</code> or <code>plan</code> column
+            unless something else stops them.
+          </li>
+          <li>
+            <strong>Views and functions that skip the rules.</strong> A view runs with its creator's rights unless it
+            is set to <code>security_invoker</code>, and a <code>security definer</code> function runs with full rights.
+            Both can hand out rows your policies protect.
+          </li>
+        </ul>
+        <p>
+          Supabase's free Security Advisor (in your project dashboard) catches several of these from your settings, and
+          Supabase has been adding tools to test rules as a given user. A settings review alone won't tell you what a
+          stranger or a second user can actually get, so a rule that's switched on but too loose can still look fine.
+        </p>
+
+        <h2 id="how-to-check">How to check, step by step</h2>
+        <p>
+          Run these in your project's SQL editor. In the Supabase dashboard it's <strong>SQL Editor</strong>; on Lovable
+          Cloud it's under <strong>More</strong>, then <strong>Cloud</strong>, then <strong>SQL editor</strong>. They only read your database's structure,
+          not your data.
+        </p>
+
+        <h3>1. Find tables with RLS off</h3>
+        <p>Any table listed here as <code>false</code> is open to anyone holding your public key.</p>
+        <pre><code>select c.relname as table_name, c.relrowsecurity as rls_on
+from pg_class c
+join pg_namespace n on n.oid = c.relnamespace
+where n.nspname = 'public' and c.relkind in ('r', 'p')
+order by rls_on, table_name;</code></pre>
+
+        <h3>2. Find rules that let everyone in</h3>
+        <p>
+          This lists every policy whose condition is simply <code>true</code>. Each one needs a decision: fine for a
+          public product list, a leak for messages, orders or profiles.
+        </p>
+        <pre><code>select tablename, policyname, cmd, roles, qual, with_check
+from pg_policies
+where schemaname = 'public'
+  and (qual = 'true' or with_check = 'true');</code></pre>
+
+        <h3>3. Find views that ignore your rules</h3>
+        <p>Views listed here run with their owner's rights, so RLS on the tables underneath doesn't apply to them.</p>
+        <pre><code>select c.relname as view_name
+from pg_class c
+join pg_namespace n on n.oid = c.relnamespace
+where n.nspname = 'public' and c.relkind = 'v'
+  and not coalesce(c.reloptions &amp;&amp; array['security_invoker=true', 'security_invoker=on'], false);</code></pre>
+
+        <h3>4. Find full-rights functions anyone can call</h3>
+        <p>
+          A <code>security definer</code> function in <code>public</code> can be called through the API. If it returns
+          rows, check that it only returns what the caller is allowed to see.
+        </p>
+        <pre><code>select p.proname as function_name
+from pg_proc p
+join pg_namespace n on n.oid = p.pronamespace
+where n.nspname = 'public' and p.prosecdef
+  and has_function_privilege('anon', p.oid, 'execute');</code></pre>
+
+        <h3>5. Try it as a stranger</h3>
+        <p>
+          Settings tell you what should happen. A real request tells you what does. With your project URL and public
+          key (both in your site's code anyway), ask for a table that should be private. Only do this on a project you
+          own or manage.
+        </p>
+        <pre><code>curl "https://YOUR-PROJECT.supabase.co/rest/v1/profiles?select=*&amp;limit=5" \
+  -H "apikey: YOUR_PUBLIC_KEY"</code></pre>
+        <p>
+          An empty list <code>[]</code> is what you want for private data. Rows coming back means anyone on the internet
+          can get them too.
+        </p>
+
+        <h3>6. Try it as another user</h3>
+        <p>
+          The stranger test misses a common leak: one signed-up user reading another user's rows. Sign up two
+          test accounts, log in as the second one, and try to load the first one's data. You can also test from the SQL editor.
+        </p>
+        <p>Newer Supabase dashboards let you pick a role next to the <strong>Run</strong> button in the SQL editor: choose <strong>authenticated</strong> and a user, then query the table. Without that option, run this in the SQL editor:</p>
+        <pre><code>set role authenticated;
+select set_config('request.jwt.claims', '{"sub": "SECOND-USER-UUID", "role": "authenticated"}', false);
+select * from public.notes;  -- should show only the second user's rows</code></pre>
+        <p>Afterwards, run <code>reset role;</code> in the same SQL editor tab, or just reload the editor.</p>
+
+        <div class="inline-cta">
+          <p>Rather not run all of this by hand? The free Lockstamp check finds these patterns and tries the attacks as a stranger and as a second user, on a private copy in your browser.</p>
+          <a class="button accent" href="../#check">Run the free check</a>
+        </div>
+
+        <h2 id="fix">How to fix what you find</h2>
+        <p>
+          The usual fix is to turn RLS on and give each private table owner-only rules. This example is for a
+          <code>notes</code> table with a <code>user_id</code> column. Change the table and column names to match yours,
+          and read it before you run it.
+        </p>
+        <pre><code>alter table public.notes enable row level security;
+
+-- Drop any rule that lets everyone in, for example:
+drop policy if exists "Enable read access for all users" on public.notes;
+
+create policy "Owners read their notes" on public.notes
+  for select to authenticated using ((select auth.uid()) = user_id);
+
+create policy "Owners add their notes" on public.notes
+  for insert to authenticated with check ((select auth.uid()) = user_id);
+
+create policy "Owners edit their notes" on public.notes
+  for update to authenticated
+  using ((select auth.uid()) = user_id)
+  with check ((select auth.uid()) = user_id);
+
+create policy "Owners delete their notes" on public.notes
+  for delete to authenticated using ((select auth.uid()) = user_id);</code></pre>
+        <p>For the other holes from the checks above:</p>
+        <p class="label">Make a view follow the caller's rules</p>
+        <pre><code>alter view public.my_view set (security_invoker = true);</code></pre>
+        <p class="label">Stop strangers calling a full-rights function</p>
+        <pre><code>revoke execute on function public.get_all_emails() from anon, authenticated, public;</code></pre>
+        <p>If logged-in users need that function, keep their access and change it so it only returns the caller's own rows (for example <code>where user_id = auth.uid()</code>).</p>
+        <p class="label">Let users edit only safe columns of their profile</p>
+        <pre><code>revoke update on public.profiles from authenticated;
+grant update (display_name, avatar_url) on public.profiles to authenticated;</code></pre>
+        <p>List every column your profile form saves, or those edits will start failing. If users create their own profile row, they could set <code>role</code> there too, so give it a default and limit the insert grant the same way.</p>
+        <p>
+          After any change, log in as a normal user and click through your app's main features. A page that goes empty
+          usually means a missing <code>select</code> rule. Our
+          <a href="../supabase-rls-not-working/">RLS not working guide</a> covers those cases.
+        </p>
+
+        <h2 id="limits">What no checker can tell you</h2>
+        <p>
+          A checker can show that a stranger can read a table. It can't know whether you meant that table to be public.
+          Product listings and public reviews often should be readable by everyone; messages and orders should not. In
+          rebuilds from public migration files of 27 projects, our attacks worked in 14, and most of those results still
+          needed a person to decide whether the data was meant to be public.
+        </p>
+        <p>
+          Database rules are also only one part of an app. Keys pasted into front-end code, storage buckets, server
+          functions and login settings need their own review, and no tool can promise an app has no other weaknesses.
+        </p>
+      </article>
+
+      <aside class="aside" aria-label="Next steps">
+        <div class="aside-card night">
+          <h2>Check your project free</h2>
+          <p>Paste one query result. Lockstamp rebuilds your rules on a private copy in your browser, tries real attacks, and writes a fix file when it can.</p>
+          <a class="button accent" href="../#check">Run the free check</a>
+          <p class="small-print">No signup. Nothing is uploaded.</p>
+        </div>
+        <div class="aside-card">
+          <h2>Want it fixed for you?</h2>
+          <p>Mark M. applies the fix to your project, tests your main features and sends you the before-and-after proof. Intro price from $150, hired through Upwork.</p>
+          <a class="button" href="https://www.upwork.com/freelancers/~01d7446dbecad0fbf2" target="_blank" rel="noopener">Get it fixed<span class="sr-only"> (opens Upwork in a new tab)</span></a>
+        </div>
+        <nav class="related" aria-label="Related guides">
+          <p class="kicker">Related guides</p>
+          <a href="../supabase-rls-not-working/">Supabase RLS not working? Causes and fixes</a>
+          <a href="../is-my-lovable-app-secure/">Is my Lovable app secure? How to check</a>
+        </nav>
+      </aside>
+    </main>
+
+    <section class="faq split" aria-labelledby="faq-title">
+      <div>
+        <p class="kicker">FAQ</p>
+        <h2 id="faq-title">Questions about checking RLS</h2>
+      </div>
+      <div class="faq-list">
+        <details>
+          <summary>Isn't Supabase's Security Advisor enough?</summary>
+          <p>It's a good first step and it's free. It reviews your settings and flags known patterns, like a table with RLS off. It doesn't try requests as a stranger or as another user, so a rule that is switched on but too loose can still pass. Use both.</p>
+        </details>
+        <details>
+          <summary>Will turning on RLS break my app?</summary>
+          <p>It can, for a moment. With RLS on and no rules, the table returns nothing, so pages that read it go empty until you add the policies. Add the enable statement and the policies together, then click through your app while logged in as a normal user.</p>
+        </details>
+        <details>
+          <summary>Does the service_role key respect RLS?</summary>
+          <p>No. The service_role key (called the secret key in newer projects) skips RLS completely. That's why it must only ever live on a server, never in your website's code. If it's in your front end, treat it as leaked and rotate it.</p>
+        </details>
+        <details>
+          <summary>Is the Lockstamp check really free?</summary>
+          <p>Yes. There's no signup, and it runs in your browser tab. The paid part is optional: if you'd rather not apply the fix yourself, you can hire Mark M. through Upwork to do it.</p>
+        </details>
+      </div>
+    </section>
+
+    <section class="closing" aria-labelledby="closing-title">
+      <h2 id="closing-title">See which attacks actually work.</h2>
+      <p>Free, about a minute, and nothing leaves your browser.</p>
+      <a class="button accent" href="../#check">Run the free check</a>
+    </section>
+
+    <footer class="footer">
+      <nav aria-label="Site">
+        <a href="../">Lockstamp free check</a>
+        <a href="../supabase-rls-checker/">Supabase RLS checker</a>
+        <a href="../supabase-rls-not-working/">Supabase RLS not working</a>
+        <a href="../is-my-lovable-app-secure/">Is my Lovable app secure?</a>
+      </nav>
+      <p>Not affiliated with Supabase or Lovable. Product names belong to their owners.</p>
+    </footer>
+
+    <script type="module" src="../src/guide.ts"></script>
+  </body>
+</html>
